@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Line Bisection Test</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    background: #f4f4f4;
+}
+#canvas {
+    border: 1px solid black;
+    touch-action: none;
+    background: white;
+}
+#errors {
+    margin-top: 20px;
+    width: 90%;
+    max-width: 600px;
+    text-align: left;
+    overflow-y: scroll;
+    max-height: 200px;
+    background: white;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+#finalStats {
+    margin-top: 20px;
+    font-weight: bold;
+}
+#userForm {
+    display: none;
+    margin-top: 10px;
+}
+#userForm input {
+    margin: 5px;
+}
+</style>
+</head>
+<body>
+
+<h1>Line Bisection Test</h1>
+<canvas id="canvas"></canvas>
+<div id="errors"></div>
+<div id="finalStats"></div>
+
+<div id="userForm">
+    <p>Please enter your info before downloading results:</p>
+    <input type="text" id="name" placeholder="Name" required>
+    <input type="text" id="surname" placeholder="Surname" required>
+    <input type="number" id="age" placeholder="Age" required>
+    <input type="number" id="duration" placeholder="Years with Parkinson's" required>
+    <br>
+    <button id="submitInfo">Download CSV</button>
+</div>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let lineLength = 0;
+let startX = 0;
+let startY = 0;
+let trueMidpointX = 0;
+const totalDraws = 100; // Change for testing or actual experiment for test make it lower like 10 for actual it should be 100
+let drawCount = 0;
+let errors = [];
+
+let userLine = null;
+let drawing = false;
+let stats = {};
+
+// Responsive canvas
+function resizeCanvas() {
+    canvas.width = Math.min(window.innerWidth * 0.8, 800);
+    canvas.height = Math.min(window.innerHeight * 0.6, 600);
+    drawLine();
+}
+window.addEventListener("resize", resizeCanvas);
+
+// Draw horizontal line
+function drawLine() {
+    lineLength = canvas.width / 2;
+    startX = Math.random() * (canvas.width - lineLength);
+    const minY = canvas.height * 0.05;
+    const maxY = canvas.height * 0.95;
+    startY = minY + Math.random() * (maxY - minY);
+    trueMidpointX = startX + lineLength / 2;
+    drawCanvas();
+}
+
+// Draw everything
+function drawCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Horizontal line
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(startX + lineLength, startY);
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "black";
+    ctx.stroke();
+
+    // User line
+    if (userLine) {
+        ctx.beginPath();
+        ctx.moveTo(userLine.x1, userLine.y1);
+        ctx.lineTo(userLine.x2, userLine.y2);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "blue";
+        ctx.stroke();
+    }
+}
+
+// Get coordinates relative to canvas
+function getCoords(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    return { x: clientX - rect.left, y: clientY - rect.top };
+}
+
+// Start drawing
+function startDraw(x, y) {
+    drawing = true;
+    userLine = { x1: x, y1: y, x2: x, y2: y };
+    drawCanvas();
+}
+
+// Move drawing
+function moveDraw(x, y) {
+    if (!drawing) return;
+    userLine.x2 = x;
+    userLine.y2 = y;
+    drawCanvas();
+}
+
+// End drawing
+function endDraw(x, y) {
+    if (!drawing) return;
+    drawing = false;
+
+    const slope = (userLine.y2 - userLine.y1) / (userLine.x2 - userLine.x1 || 0.0001);
+    const intersectionX = userLine.x1 + (startY - userLine.y1) / slope;
+
+    const tolerance = 20;
+    if (intersectionX < startX - tolerance || intersectionX > startX + lineLength + tolerance) {
+        userLine = null;
+        drawCanvas();
+        return; // retry
+    }
+
+    const error = intersectionX - trueMidpointX;
+    const percentageError = (error / (lineLength / 2)) * 100;
+    const clampedPercentage = Math.max(-100, Math.min(100, percentageError));
+
+    errors.push(clampedPercentage);
+
+    const errorSign = clampedPercentage >= 0 ? "+" : "-";
+    const errorsDiv = document.getElementById("errors");
+    const lineMsg = document.createElement("p");
+    lineMsg.textContent = `Draw ${drawCount + 1}: ${errorSign}${Math.abs(clampedPercentage).toFixed(2)}%`;
+    errorsDiv.appendChild(lineMsg);
+
+    drawCount++;
+    userLine = null;
+
+    if (drawCount === totalDraws) {
+        calculateStats();
+        document.getElementById("userForm").style.display = "block";
+    }
+
+    drawLine();
+}
+
+// Calculate detailed stats
+function calculateStats() {
+    const negErrors = errors.filter(e => e < 0);
+    const posErrors = errors.filter(e => e > 0);
+
+    const negCount = negErrors.length;
+    const posCount = posErrors.length;
+
+    const meanAbsError = errors.map(Math.abs).reduce((a,b)=>a+b,0)/errors.length;
+    const meanNeg = negCount ? negErrors.reduce((a,b)=>a+b,0)/negCount : 0;
+    const meanPos = posCount ? posErrors.reduce((a,b)=>a+b,0)/posCount : 0;
+
+    const closestMark = Math.min(...errors.map(e=>Math.abs(e)));
+    const biggestMiss = errors.reduce((prev, curr)=>Math.abs(curr)>Math.abs(prev)?curr:prev,0);
+
+    stats = { meanAbsError, meanNeg, meanPos, negCount, posCount, closestMark, biggestMiss };
+
+    document.getElementById("finalStats").innerHTML = `
+        Total draws: ${totalDraws}<br>
+        Negative Errors: ${negCount}<br>
+        Positive Errors: ${posCount}<br>
+        Average Absolute Error: ${meanAbsError.toFixed(2)}%<br>
+        Average of Negative Errors: ${meanNeg.toFixed(2)}%<br>
+        Average of Positive Errors: ${meanPos.toFixed(2)}%<br>
+        Closest Mark: ${closestMark.toFixed(2)}%<br>
+        Biggest Miss: ${biggestMiss.toFixed(2)}%
+    `;
+}
+
+/* ===== TOUCH EVENTS ===== */
+canvas.addEventListener("touchstart", e=>{
+    e.preventDefault();
+    const pos = getCoords(e.touches[0].clientX, e.touches[0].clientY);
+    startDraw(pos.x, pos.y);
+});
+canvas.addEventListener("touchmove", e=>{
+    e.preventDefault();
+    const pos = getCoords(e.touches[0].clientX, e.touches[0].clientY);
+    moveDraw(pos.x, pos.y);
+});
+canvas.addEventListener("touchend", e=>{
+    e.preventDefault();
+    const pos = getCoords(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    endDraw(pos.x, pos.y);
+});
+
+/* ===== MOUSE EVENTS ===== */
+canvas.addEventListener("mousedown", e=>startDraw(e.offsetX, e.offsetY));
+canvas.addEventListener("mousemove", e=>moveDraw(e.offsetX, e.offsetY));
+canvas.addEventListener("mouseup", e=>endDraw(e.offsetX, e.offsetY));
+
+/* ===== CSV DOWNLOAD ===== */
+document.getElementById("submitInfo").addEventListener("click", () => {
+    const name = document.getElementById("name").value.trim();
+    const surname = document.getElementById("surname").value.trim();
+    const age = document.getElementById("age").value.trim();
+    const duration = document.getElementById("duration").value.trim();
+
+    if (!name || !surname || !age || !duration) {
+        alert("Please fill in all fields");
+        return;
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+
+    // User info
+    csvContent += `Name,${name}\nSurname,${surname}\nAge,${age}\nYears with Parkinson's,${duration}\n\n`;
+
+    // Final statistics first
+    csvContent += "Final Statistics\n";
+    csvContent += `Negative Errors,${stats.negCount}\n`;
+    csvContent += `Positive Errors,${stats.posCount}\n`;
+    csvContent += `Average Absolute Error,${stats.meanAbsError.toFixed(2)}%\n`;
+    csvContent += `Average of Negative Errors,${stats.meanNeg.toFixed(2)}%\n`;
+    csvContent += `Average of Positive Errors,${stats.meanPos.toFixed(2)}%\n`;
+    csvContent += `Closest Mark,${stats.closestMark.toFixed(2)}%\n`;
+    csvContent += `Biggest Miss,${stats.biggestMiss.toFixed(2)}%\n\n`;
+
+    // Then per-draw errors
+    csvContent += "Draw,Error (%)\n";
+    errors.forEach((err, index) => {
+        csvContent += `${index + 1},${err.toFixed(2)}\n`;
+    });
+
+    // Download CSV
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    const fileName = `${name}_${surname}_${age}_${duration}.csv`;
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+});
+
+
+// Initialize
+resizeCanvas();
+</script>
+
+</body>
+</html>
