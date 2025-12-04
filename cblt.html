@@ -93,13 +93,16 @@ let startX = 0;
 let startY = 0;
 let trueMidpointX = 0;
 
-let totalDraws = 100; // default, overridden by researcher input
+let totalDraws = 100;
 let drawCount = 0;
 let errors = [];
 
 let userLine = null;
 let drawing = false;
 let stats = {};
+
+// NEW FLAG — Prevent drawing after test is done
+let testFinished = false;
 
 // Responsive canvas
 function resizeCanvas() {
@@ -111,6 +114,8 @@ window.addEventListener("resize", resizeCanvas);
 
 // Draw horizontal line
 function drawLine() {
+    if (testFinished) return;
+
     lineLength = canvas.width / 2;
     startX = Math.random() * (canvas.width - lineLength);
     const minY = canvas.height * 0.05;
@@ -141,7 +146,6 @@ function drawCanvas() {
     }
 }
 
-// Convert screen coords to canvas coords
 function getCoords(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
     return { x: clientX - rect.left, y: clientY - rect.top };
@@ -149,22 +153,24 @@ function getCoords(clientX, clientY) {
 
 // Start drawing
 function startDraw(x, y) {
+    if (testFinished) return; // ← BLOCK DRAWING
+
     drawing = true;
     userLine = { x1: x, y1: y, x2: x, y2: y };
     drawCanvas();
 }
 
-// Continue drawing
 function moveDraw(x, y) {
-    if (!drawing) return;
+    if (!drawing || testFinished) return; // ← BLOCK DRAWING
+
     userLine.x2 = x;
     userLine.y2 = y;
     drawCanvas();
 }
 
-// End drawing
 function endDraw(x, y) {
-    if (!drawing) return;
+    if (!drawing || testFinished) return; // ← BLOCK DRAWING
+
     drawing = false;
 
     const slope = (userLine.y2 - userLine.y1) /
@@ -196,9 +202,11 @@ function endDraw(x, y) {
     userLine = null;
 
     if (drawCount === totalDraws) {
+        testFinished = true;     // ← LOCK TEST
         calculateStats();
         document.getElementById("userForm").style.display = "block";
         document.getElementById("finalStats").style.display = "block";
+        return;
     }
 
     drawLine();
@@ -223,7 +231,6 @@ function calculateStats() {
     const closestMark = Math.min(...errors.map(e => Math.abs(e)));
     const biggestMiss = errors.reduce((p,c)=>Math.abs(c)>Math.abs(p)?c:p,0);
 
-    // Standard deviation
     const stdDev = Math.sqrt(errors.map(e => (e - signedAverage)**2).reduce((a,b)=>a+b,0) / errors.length);
 
     stats = {
@@ -254,7 +261,7 @@ function calculateStats() {
     `;
 }
 
-/* ===== TOUCH EVENTS ===== */
+/* ===== TOUCH ===== */
 canvas.addEventListener("touchstart", e=>{
     e.preventDefault();
     const p = getCoords(e.touches[0].clientX, e.touches[0].clientY);
@@ -271,12 +278,12 @@ canvas.addEventListener("touchend", e=>{
     endDraw(p.x, p.y);
 });
 
-/* ===== MOUSE EVENTS ===== */
+/* ===== MOUSE ===== */
 canvas.addEventListener("mousedown", e=>startDraw(e.offsetX, e.offsetY));
 canvas.addEventListener("mousemove", e=>moveDraw(e.offsetX, e.offsetY));
 canvas.addEventListener("mouseup",   e=>endDraw(e.offsetX, e.offsetY));
 
-/* ===== CSV DOWNLOAD ===== */
+/* ===== CSV ===== */
 document.getElementById("submitInfo").addEventListener("click", () => {
     const name = document.getElementById("name").value.trim();
     const surname = document.getElementById("surname").value.trim();
@@ -290,10 +297,8 @@ document.getElementById("submitInfo").addEventListener("click", () => {
 
     let csv = "data:text/csv;charset=utf-8,";
 
-    // User info
     csv += `Name,${name}\nSurname,${surname}\nAge,${age}\nYears with Parkinson's,${duration}\n\n`;
 
-    // Final statistics FIRST
     csv += "Final Statistics\n";
     csv += `Directional Bias (Signed Average Error),${stats.signedAverage.toFixed(2)}%\n`;
     csv += `Overall Accuracy Error (Absolute Average Error),${stats.meanAbsError.toFixed(2)}%\n`;
@@ -305,11 +310,9 @@ document.getElementById("submitInfo").addEventListener("click", () => {
     csv += `Closest Mark,${stats.closestMark.toFixed(2)}%\n`;
     csv += `Biggest Miss,${stats.biggestMiss.toFixed(2)}%\n\n`;
 
-    // Draw by draw errors
     csv += "Draw,Error (%)\n";
     errors.forEach((e,i)=>csv += `${i+1},${e.toFixed(2)}\n`);
 
-    // Download
     const uri = encodeURI(csv);
     const link = document.createElement("a");
     const fileName = `Test_${surname}_${age}_${duration}.csv`;
