@@ -16,29 +16,37 @@ body {
     background: #f4f4f4;
     padding-top: 20px;
 }
+#researcherForm {
+    margin-bottom: 20px;
+    background: white;
+    padding: 15px;
+    border: 1px solid #ccc;
+}
+#researcherForm input {
+    margin: 5px;
+}
 #canvas {
     border: 1px solid black;
     touch-action: none;
     background: white;
-    margin-bottom: 60px; /* push canvas away from errors */
+    display: none;
 }
 #errors {
-    margin-top: 60px; /* push errors farther down */
+    margin-top: 50px; /* push errors down */
     width: 90%;
     max-width: 600px;
     text-align: left;
-    overflow-y: auto;
+    overflow-y: scroll;
     max-height: 200px;
     background: white;
     padding: 10px;
     border: 1px solid #ccc;
-    font-family: Arial, sans-serif;
-    font-size: 14px;
+    display: none;
 }
 #finalStats {
     margin-top: 20px;
-    font-family: Arial, sans-serif;
-    font-size: 14px;
+    font-weight: normal;
+    display: none;
 }
 #userForm {
     display: none;
@@ -46,14 +54,9 @@ body {
     background: white;
     padding: 15px;
     border: 1px solid #ccc;
-    font-family: Arial, sans-serif;
 }
 #userForm input {
     margin: 5px;
-}
-button {
-    font-family: Arial, sans-serif;
-    font-size: 14px;
 }
 </style>
 </head>
@@ -61,9 +64,15 @@ button {
 
 <h1>Line Bisection Test</h1>
 
+<div id="researcherForm">
+    <p><b>Enter number of lines for this test:</b></p>
+    <input type="number" id="numLines" placeholder="Number of lines" required>
+    <button id="startTest">Start Test</button>
+</div>
+
 <canvas id="canvas"></canvas>
-<div id="finalStats"></div>
 <div id="errors"></div>
+<div id="finalStats"></div>
 
 <div id="userForm">
     <p><b>Please enter participant information before downloading results:</b></p>
@@ -83,7 +92,8 @@ let lineLength = 0;
 let startX = 0;
 let startY = 0;
 let trueMidpointX = 0;
-const totalDraws = 100; // change to 10 for testing
+
+let totalDraws = 100; // default, overridden by researcher input
 let drawCount = 0;
 let errors = [];
 
@@ -91,11 +101,11 @@ let userLine = null;
 let drawing = false;
 let stats = {};
 
-// Responsive canvas with larger area
+// Responsive canvas
 function resizeCanvas() {
-    canvas.width = Math.min(window.innerWidth * 0.9, 900); // 90% width, max 900px
-    canvas.height = Math.min(window.innerHeight * 0.7, 700); // 70% height, max 700px
-    drawLine();
+    canvas.width = Math.min(window.innerWidth * 0.9, 900);
+    canvas.height = Math.min(window.innerHeight * 0.65, 650);
+    if(drawCount < totalDraws) drawLine();
 }
 window.addEventListener("resize", resizeCanvas);
 
@@ -110,7 +120,7 @@ function drawLine() {
     drawCanvas();
 }
 
-// Draw everything
+// Draw all canvas content
 function drawCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -159,10 +169,12 @@ function endDraw(x, y) {
 
     const slope = (userLine.y2 - userLine.y1) /
                  (userLine.x2 - userLine.x1 || 0.0001);
+
     const intersectionX = userLine.x1 + (startY - userLine.y1) / slope;
 
     const tolerance = 20;
-    if (intersectionX < startX - tolerance || intersectionX > startX + lineLength + tolerance) {
+    if (intersectionX < startX - tolerance ||
+        intersectionX > startX + lineLength + tolerance) {
         userLine = null;
         drawCanvas();
         return;
@@ -186,6 +198,7 @@ function endDraw(x, y) {
     if (drawCount === totalDraws) {
         calculateStats();
         document.getElementById("userForm").style.display = "block";
+        document.getElementById("finalStats").style.display = "block";
     }
 
     drawLine();
@@ -207,23 +220,22 @@ function calculateStats() {
     const meanNeg = negCount ? negErrors.reduce((a,b)=>a+b,0)/negCount : 0;
     const meanPos = posCount ? posErrors.reduce((a,b)=>a+b,0)/posCount : 0;
 
-    // Standard deviation (signed)
-    const stdDev = Math.sqrt(errors.map(e => Math.pow(e - signedAverage, 2))
-                            .reduce((a,b)=>a+b,0)/errors.length);
-
     const closestMark = Math.min(...errors.map(e => Math.abs(e)));
     const biggestMiss = errors.reduce((p,c)=>Math.abs(c)>Math.abs(p)?c:p,0);
+
+    // Standard deviation
+    const stdDev = Math.sqrt(errors.map(e => (e - signedAverage)**2).reduce((a,b)=>a+b,0) / errors.length);
 
     stats = {
         signedAverage,
         meanAbsError,
         meanNeg,
         meanPos,
-        stdDev,
         negCount,
         posCount,
         closestMark,
-        biggestMiss
+        biggestMiss,
+        stdDev
     };
 
     document.getElementById("finalStats").innerHTML = `
@@ -231,9 +243,9 @@ function calculateStats() {
         Negative Errors: ${negCount}<br>
         Positive Errors: ${posCount}<br><br>
 
-        <b>Directional Bias (Signed Average Error):</b> ${signedAverage.toFixed(2)}%<br>
-        <b>Overall Accuracy Error (Absolute Average Error):</b> ${meanAbsError.toFixed(2)}%<br>
-        <b>Standard Deviation:</b> ${stdDev.toFixed(2)}%<br><br>
+        Directional Bias (Signed Average Error): ${signedAverage.toFixed(2)}%<br>
+        Overall Accuracy Error (Absolute Average Error): ${meanAbsError.toFixed(2)}%<br>
+        Standard Deviation: ${stdDev.toFixed(2)}%<br><br>
 
         Average of Negative Errors: ${meanNeg.toFixed(2)}%<br>
         Average of Positive Errors: ${meanPos.toFixed(2)}%<br>
@@ -308,9 +320,22 @@ document.getElementById("submitInfo").addEventListener("click", () => {
     document.body.removeChild(link);
 });
 
-// Initialize
-resizeCanvas();
-</script>
+/* ===== START TEST ===== */
+document.getElementById("startTest").addEventListener("click", () => {
+    const n = parseInt(document.getElementById("numLines").value);
+    if (!n || n <= 0) {
+        alert("Please enter a valid number of lines.");
+        return;
+    }
+    totalDraws = n;
 
+    document.getElementById("researcherForm").style.display = "none";
+    canvas.style.display = "block";
+    document.getElementById("errors").style.display = "block";
+    document.getElementById("finalStats").style.display = "block";
+
+    resizeCanvas();
+});
+</script>
 </body>
 </html>
