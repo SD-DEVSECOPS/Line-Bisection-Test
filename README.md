@@ -20,8 +20,6 @@ The system automatically records:
 - CSV export including full data and participant demographics
 
 A researcher can **set the number of trials at the beginning**, allowing flexibility for different study protocols.
-
-For access test: https://sd-devsecops.github.io/Line-Bisection-Test/cblt.html
 ---
 
 ## ⚠ Research Validity Notice
