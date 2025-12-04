@@ -1,7 +1,7 @@
 # Line Bisection Test (cLBT)
 
 This repository contains the **Computerized Line Bisection Test (cLBT)** — a browser-based assessment tool used to measure visuospatial attention, perceptual biases, and motor accuracy.  
-It is commonly used in neurological and neuropsychological research, including studies involving Parkinson’s disease, stroke, spatial neglect, and related conditions.
+It is commonly used in neurological and neuropsychological research, including studies involving stroke, spatial neglect, and related conditions.
 
 ---
 
@@ -20,6 +20,7 @@ The system automatically records:
 - CSV export including full data and participant demographics
 
 A researcher can **set the number of trials at the beginning**, allowing flexibility for different study protocols.
+
 ---
 
 ## ⚠ Research Validity Notice
@@ -57,8 +58,7 @@ The cLBT runs entirely in a web browser — no installation required.
    - A form will appear requesting:
      - Name  
      - Surname  
-     - Age  
-     - Years with Parkinson’s (if applicable)
+     - Age
 
 5. Press **Download CSV** to save results.  
    The file includes:
@@ -106,3 +106,7 @@ For any clinical or research use:
 - Obtain informed consent  
 - Validate all exported results independently  
 
+---
+
+Project by Melisa Zengin  
+Powered by ChatGPT
