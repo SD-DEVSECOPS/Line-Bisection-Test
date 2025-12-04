@@ -32,7 +32,7 @@ body {
     display: none;
 }
 #errors {
-    margin-top: 50px; /* push errors down */
+    margin-top: 50px;
     width: 90%;
     max-width: 600px;
     text-align: left;
@@ -79,7 +79,6 @@ body {
     <input type="text" id="name" placeholder="Name" required>
     <input type="text" id="surname" placeholder="Surname" required>
     <input type="number" id="age" placeholder="Age" required>
-    <input type="number" id="duration" placeholder="Years with Parkinson's" required>
     <br>
     <button id="submitInfo">Download CSV</button>
 </div>
@@ -100,8 +99,6 @@ let errors = [];
 let userLine = null;
 let drawing = false;
 let stats = {};
-
-// NEW FLAG — Prevent drawing after test is done
 let testFinished = false;
 
 // Responsive canvas
@@ -153,7 +150,7 @@ function getCoords(clientX, clientY) {
 
 // Start drawing
 function startDraw(x, y) {
-    if (testFinished) return; // ← BLOCK DRAWING
+    if (testFinished) return;
 
     drawing = true;
     userLine = { x1: x, y1: y, x2: x, y2: y };
@@ -161,7 +158,7 @@ function startDraw(x, y) {
 }
 
 function moveDraw(x, y) {
-    if (!drawing || testFinished) return; // ← BLOCK DRAWING
+    if (!drawing || testFinished) return;
 
     userLine.x2 = x;
     userLine.y2 = y;
@@ -169,7 +166,7 @@ function moveDraw(x, y) {
 }
 
 function endDraw(x, y) {
-    if (!drawing || testFinished) return; // ← BLOCK DRAWING
+    if (!drawing || testFinished) return;
 
     drawing = false;
 
@@ -202,7 +199,7 @@ function endDraw(x, y) {
     userLine = null;
 
     if (drawCount === totalDraws) {
-        testFinished = true;     // ← LOCK TEST
+        testFinished = true;
         calculateStats();
         document.getElementById("userForm").style.display = "block";
         document.getElementById("finalStats").style.display = "block";
@@ -288,16 +285,17 @@ document.getElementById("submitInfo").addEventListener("click", () => {
     const name = document.getElementById("name").value.trim();
     const surname = document.getElementById("surname").value.trim();
     const age = document.getElementById("age").value.trim();
-    const duration = document.getElementById("duration").value.trim();
 
-    if (!name || !surname || !age || !duration) {
+    if (!name || !surname || !age) {
         alert("Please fill all fields.");
         return;
     }
 
+    const uniqueCode = Math.floor(Math.random()*1e8).toString().padStart(8,'0');
+
     let csv = "data:text/csv;charset=utf-8,";
 
-    csv += `Name,${name}\nSurname,${surname}\nAge,${age}\nYears with Parkinson's,${duration}\n\n`;
+    csv += `Name,${name}\nSurname,${surname}\nAge,${age}\n\n`;
 
     csv += "Final Statistics\n";
     csv += `Directional Bias (Signed Average Error),${stats.signedAverage.toFixed(2)}%\n`;
@@ -315,7 +313,7 @@ document.getElementById("submitInfo").addEventListener("click", () => {
 
     const uri = encodeURI(csv);
     const link = document.createElement("a");
-    const fileName = `Test_${surname}_${age}_${duration}.csv`;
+    const fileName = `${uniqueCode}_${surname}_${age}.csv`;
     link.setAttribute("href", uri);
     link.setAttribute("download", fileName);
     document.body.appendChild(link);
