@@ -10,49 +10,63 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    height: 100vh;
+    justify-content: flex-start;
+    min-height: 100vh;
     margin: 0;
     background: #f4f4f4;
+    padding-top: 20px;
 }
 #canvas {
     border: 1px solid black;
     touch-action: none;
     background: white;
+    margin-bottom: 60px; /* push canvas away from errors */
 }
 #errors {
-    margin-top: 20px;
+    margin-top: 60px; /* push errors farther down */
     width: 90%;
     max-width: 600px;
     text-align: left;
-    overflow-y: scroll;
+    overflow-y: auto;
     max-height: 200px;
     background: white;
     padding: 10px;
     border: 1px solid #ccc;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
 }
 #finalStats {
     margin-top: 20px;
-    font-weight: bold;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
 }
 #userForm {
     display: none;
-    margin-top: 10px;
+    margin-top: 20px;
+    background: white;
+    padding: 15px;
+    border: 1px solid #ccc;
+    font-family: Arial, sans-serif;
 }
 #userForm input {
     margin: 5px;
+}
+button {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
 }
 </style>
 </head>
 <body>
 
 <h1>Line Bisection Test</h1>
+
 <canvas id="canvas"></canvas>
-<div id="errors"></div>
 <div id="finalStats"></div>
+<div id="errors"></div>
 
 <div id="userForm">
-    <p>Please enter your info before downloading results:</p>
+    <p><b>Please enter participant information before downloading results:</b></p>
     <input type="text" id="name" placeholder="Name" required>
     <input type="text" id="surname" placeholder="Surname" required>
     <input type="number" id="age" placeholder="Age" required>
@@ -69,7 +83,7 @@ let lineLength = 0;
 let startX = 0;
 let startY = 0;
 let trueMidpointX = 0;
-const totalDraws = 100; // Change for testing or actual experiment for test make it lower like 10 for actual it should be 100
+const totalDraws = 100; // change to 10 for testing
 let drawCount = 0;
 let errors = [];
 
@@ -77,10 +91,10 @@ let userLine = null;
 let drawing = false;
 let stats = {};
 
-// Responsive canvas
+// Responsive canvas with larger area
 function resizeCanvas() {
-    canvas.width = Math.min(window.innerWidth * 0.8, 800);
-    canvas.height = Math.min(window.innerHeight * 0.6, 600);
+    canvas.width = Math.min(window.innerWidth * 0.9, 900); // 90% width, max 900px
+    canvas.height = Math.min(window.innerHeight * 0.7, 700); // 70% height, max 700px
     drawLine();
 }
 window.addEventListener("resize", resizeCanvas);
@@ -100,7 +114,6 @@ function drawLine() {
 function drawCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Horizontal line
     ctx.beginPath();
     ctx.moveTo(startX, startY);
     ctx.lineTo(startX + lineLength, startY);
@@ -108,7 +121,6 @@ function drawCanvas() {
     ctx.strokeStyle = "black";
     ctx.stroke();
 
-    // User line
     if (userLine) {
         ctx.beginPath();
         ctx.moveTo(userLine.x1, userLine.y1);
@@ -119,7 +131,7 @@ function drawCanvas() {
     }
 }
 
-// Get coordinates relative to canvas
+// Convert screen coords to canvas coords
 function getCoords(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
     return { x: clientX - rect.left, y: clientY - rect.top };
@@ -132,7 +144,7 @@ function startDraw(x, y) {
     drawCanvas();
 }
 
-// Move drawing
+// Continue drawing
 function moveDraw(x, y) {
     if (!drawing) return;
     userLine.x2 = x;
@@ -145,26 +157,27 @@ function endDraw(x, y) {
     if (!drawing) return;
     drawing = false;
 
-    const slope = (userLine.y2 - userLine.y1) / (userLine.x2 - userLine.x1 || 0.0001);
+    const slope = (userLine.y2 - userLine.y1) /
+                 (userLine.x2 - userLine.x1 || 0.0001);
     const intersectionX = userLine.x1 + (startY - userLine.y1) / slope;
 
     const tolerance = 20;
     if (intersectionX < startX - tolerance || intersectionX > startX + lineLength + tolerance) {
         userLine = null;
         drawCanvas();
-        return; // retry
+        return;
     }
 
     const error = intersectionX - trueMidpointX;
     const percentageError = (error / (lineLength / 2)) * 100;
-    const clampedPercentage = Math.max(-100, Math.min(100, percentageError));
+    const clamped = Math.max(-100, Math.min(100, percentageError));
 
-    errors.push(clampedPercentage);
+    errors.push(clamped);
 
-    const errorSign = clampedPercentage >= 0 ? "+" : "-";
+    const sign = clamped >= 0 ? "+" : "-";
     const errorsDiv = document.getElementById("errors");
     const lineMsg = document.createElement("p");
-    lineMsg.textContent = `Draw ${drawCount + 1}: ${errorSign}${Math.abs(clampedPercentage).toFixed(2)}%`;
+    lineMsg.textContent = `Draw ${drawCount + 1}: ${sign}${Math.abs(clamped).toFixed(2)}%`;
     errorsDiv.appendChild(lineMsg);
 
     drawCount++;
@@ -178,7 +191,7 @@ function endDraw(x, y) {
     drawLine();
 }
 
-// Calculate detailed stats
+// Compute statistics
 function calculateStats() {
     const negErrors = errors.filter(e => e < 0);
     const posErrors = errors.filter(e => e > 0);
@@ -186,20 +199,42 @@ function calculateStats() {
     const negCount = negErrors.length;
     const posCount = posErrors.length;
 
-    const meanAbsError = errors.map(Math.abs).reduce((a,b)=>a+b,0)/errors.length;
+    const meanAbsError = errors.map(e => Math.abs(e))
+                               .reduce((a,b)=>a+b,0) / errors.length;
+
+    const signedAverage = errors.reduce((a,b)=>a+b,0) / errors.length;
+
     const meanNeg = negCount ? negErrors.reduce((a,b)=>a+b,0)/negCount : 0;
     const meanPos = posCount ? posErrors.reduce((a,b)=>a+b,0)/posCount : 0;
 
-    const closestMark = Math.min(...errors.map(e=>Math.abs(e)));
-    const biggestMiss = errors.reduce((prev, curr)=>Math.abs(curr)>Math.abs(prev)?curr:prev,0);
+    // Standard deviation (signed)
+    const stdDev = Math.sqrt(errors.map(e => Math.pow(e - signedAverage, 2))
+                            .reduce((a,b)=>a+b,0)/errors.length);
 
-    stats = { meanAbsError, meanNeg, meanPos, negCount, posCount, closestMark, biggestMiss };
+    const closestMark = Math.min(...errors.map(e => Math.abs(e)));
+    const biggestMiss = errors.reduce((p,c)=>Math.abs(c)>Math.abs(p)?c:p,0);
+
+    stats = {
+        signedAverage,
+        meanAbsError,
+        meanNeg,
+        meanPos,
+        stdDev,
+        negCount,
+        posCount,
+        closestMark,
+        biggestMiss
+    };
 
     document.getElementById("finalStats").innerHTML = `
-        Total draws: ${totalDraws}<br>
+        Total Draws: ${totalDraws}<br>
         Negative Errors: ${negCount}<br>
-        Positive Errors: ${posCount}<br>
-        Average Absolute Error: ${meanAbsError.toFixed(2)}%<br>
+        Positive Errors: ${posCount}<br><br>
+
+        <b>Directional Bias (Signed Average Error):</b> ${signedAverage.toFixed(2)}%<br>
+        <b>Overall Accuracy Error (Absolute Average Error):</b> ${meanAbsError.toFixed(2)}%<br>
+        <b>Standard Deviation:</b> ${stdDev.toFixed(2)}%<br><br>
+
         Average of Negative Errors: ${meanNeg.toFixed(2)}%<br>
         Average of Positive Errors: ${meanPos.toFixed(2)}%<br>
         Closest Mark: ${closestMark.toFixed(2)}%<br>
@@ -210,24 +245,24 @@ function calculateStats() {
 /* ===== TOUCH EVENTS ===== */
 canvas.addEventListener("touchstart", e=>{
     e.preventDefault();
-    const pos = getCoords(e.touches[0].clientX, e.touches[0].clientY);
-    startDraw(pos.x, pos.y);
+    const p = getCoords(e.touches[0].clientX, e.touches[0].clientY);
+    startDraw(p.x, p.y);
 });
 canvas.addEventListener("touchmove", e=>{
     e.preventDefault();
-    const pos = getCoords(e.touches[0].clientX, e.touches[0].clientY);
-    moveDraw(pos.x, pos.y);
+    const p = getCoords(e.touches[0].clientX, e.touches[0].clientY);
+    moveDraw(p.x, p.y);
 });
 canvas.addEventListener("touchend", e=>{
     e.preventDefault();
-    const pos = getCoords(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-    endDraw(pos.x, pos.y);
+    const p = getCoords(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    endDraw(p.x, p.y);
 });
 
 /* ===== MOUSE EVENTS ===== */
 canvas.addEventListener("mousedown", e=>startDraw(e.offsetX, e.offsetY));
 canvas.addEventListener("mousemove", e=>moveDraw(e.offsetX, e.offsetY));
-canvas.addEventListener("mouseup", e=>endDraw(e.offsetX, e.offsetY));
+canvas.addEventListener("mouseup",   e=>endDraw(e.offsetX, e.offsetY));
 
 /* ===== CSV DOWNLOAD ===== */
 document.getElementById("submitInfo").addEventListener("click", () => {
@@ -237,42 +272,41 @@ document.getElementById("submitInfo").addEventListener("click", () => {
     const duration = document.getElementById("duration").value.trim();
 
     if (!name || !surname || !age || !duration) {
-        alert("Please fill in all fields");
+        alert("Please fill all fields.");
         return;
     }
 
-    let csvContent = "data:text/csv;charset=utf-8,";
+    let csv = "data:text/csv;charset=utf-8,";
 
     // User info
-    csvContent += `Name,${name}\nSurname,${surname}\nAge,${age}\nYears with Parkinson's,${duration}\n\n`;
+    csv += `Name,${name}\nSurname,${surname}\nAge,${age}\nYears with Parkinson's,${duration}\n\n`;
 
-    // Final statistics first
-    csvContent += "Final Statistics\n";
-    csvContent += `Negative Errors,${stats.negCount}\n`;
-    csvContent += `Positive Errors,${stats.posCount}\n`;
-    csvContent += `Average Absolute Error,${stats.meanAbsError.toFixed(2)}%\n`;
-    csvContent += `Average of Negative Errors,${stats.meanNeg.toFixed(2)}%\n`;
-    csvContent += `Average of Positive Errors,${stats.meanPos.toFixed(2)}%\n`;
-    csvContent += `Closest Mark,${stats.closestMark.toFixed(2)}%\n`;
-    csvContent += `Biggest Miss,${stats.biggestMiss.toFixed(2)}%\n\n`;
+    // Final statistics FIRST
+    csv += "Final Statistics\n";
+    csv += `Directional Bias (Signed Average Error),${stats.signedAverage.toFixed(2)}%\n`;
+    csv += `Overall Accuracy Error (Absolute Average Error),${stats.meanAbsError.toFixed(2)}%\n`;
+    csv += `Standard Deviation,${stats.stdDev.toFixed(2)}%\n`;
+    csv += `Negative Errors,${stats.negCount}\n`;
+    csv += `Positive Errors,${stats.posCount}\n`;
+    csv += `Average Negative Error,${stats.meanNeg.toFixed(2)}%\n`;
+    csv += `Average Positive Error,${stats.meanPos.toFixed(2)}%\n`;
+    csv += `Closest Mark,${stats.closestMark.toFixed(2)}%\n`;
+    csv += `Biggest Miss,${stats.biggestMiss.toFixed(2)}%\n\n`;
 
-    // Then per-draw errors
-    csvContent += "Draw,Error (%)\n";
-    errors.forEach((err, index) => {
-        csvContent += `${index + 1},${err.toFixed(2)}\n`;
-    });
+    // Draw by draw errors
+    csv += "Draw,Error (%)\n";
+    errors.forEach((e,i)=>csv += `${i+1},${e.toFixed(2)}\n`);
 
-    // Download CSV
-    const encodedUri = encodeURI(csvContent);
+    // Download
+    const uri = encodeURI(csv);
     const link = document.createElement("a");
-    const fileName = `${name}_${surname}_${age}_${duration}.csv`;
-    link.setAttribute("href", encodedUri);
+    const fileName = `Test_${surname}_${age}_${duration}.csv`;
+    link.setAttribute("href", uri);
     link.setAttribute("download", fileName);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 });
-
 
 // Initialize
 resizeCanvas();
