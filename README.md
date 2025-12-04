@@ -1,66 +1,109 @@
 # Line Bisection Test (cLBT)
 
-This repository contains the **Computerized Line Bisection Test (cLBT)** — a web-based tool designed to assess visuospatial attention and motor function. The test is commonly used in clinical research and neurology, including studies related to Parkinson’s disease and other neurological conditions.
+This repository contains the **Computerized Line Bisection Test (cLBT)** — a browser-based assessment tool used to measure visuospatial attention, perceptual biases, and motor accuracy.  
+It is commonly used in neurological and neuropsychological research, including studies involving Parkinson’s disease, stroke, spatial neglect, and related conditions.
 
 ---
 
-## Overview
+## 📌 Overview
 
-The Line Bisection Test presents users with horizontal lines on a canvas. The participant's task is to mark the **perceived midpoint** of each line. The software records:
+The test displays horizontal lines on an interactive canvas.  
+For each trial, the participant marks what they believe is the **center** of the line.
 
-- The **bisection errors** for each trial (positive or negative deviation from the true midpoint).  
-- **Detailed statistics** including average error, standard deviation, closest mark, and biggest miss.  
-- Final results can be downloaded as a **CSV file** for further analysis, including user demographics and error breakdown.
+The system automatically records:
 
-**Important:** The built-in statistics have **not been independently validated**. Do **not** rely solely on them for research conclusions — always verify calculations independently.
+- Signed bisection error (negative = leftward bias, positive = rightward bias)  
+- Absolute error  
+- Standard deviation  
+- Closest and farthest marks  
+- Summary statistics across all trials  
+- CSV export including full data and participant demographics
 
-This tool is designed to be **cross-platform**:
-
-- **Desktop**: Use a mouse to mark the line.  
-- **Mobile/iPad**: Use touch gestures to mark the line.
-
----
-
-## How to Use
-
-1. Open the test in a modern browser:  
-   [https://sd-devsecops.github.io/Line-Bisection-Test/cblt.html](https://sd-devsecops.github.io/Line-Bisection-Test/cblt.html)  
-
-2. Draw a line to indicate the midpoint of the horizontal line.  
-
-3. After completing the predefined number of trials (default: 100), a form will appear to enter:
-   - Name
-   - Surname
-   - Age
-   - Years with Parkinson's (if applicable)
-
-4. Click **Download CSV** to save the results for analysis. The file name will automatically include the user’s details.  
+A researcher can **set the number of trials at the beginning**, allowing flexibility for different study protocols.
 
 ---
 
-## Features
+## ⚠ Research Validity Notice
 
-- Responsive design for both desktop and mobile devices.  
-- Tracks per-draw errors and calculates summary statistics.  
-- Exports results in CSV format, including user info and detailed statistics.  
-- Prevents invalid input and ensures accurate recording of user responses.  
-
----
-
-## Repository Structure
-
-- `cblt.html` – The main HTML/JS file containing the test interface and logic.  
-- `README.md` – Project documentation.  
+The built-in statistical calculations (mean, SD, etc.) are **not independently validated**.  
+**Do not rely solely on internal calculations for clinical or research conclusions.**  
+Always verify results using your own analysis pipeline.
 
 ---
 
-## License
+## 🌐 Cross-Platform Use
 
-This project is open-source and available for research and educational purposes.  
+The cLBT runs entirely in a web browser — no installation required.
+
+- **Desktop:** use mouse clicks  
+- **Mobile / iPad:** use touchscreen taps  
+- Fully responsive layout  
+- Canvas area enlarged for better visibility on phones and tablets  
+- Live errors/stats are placed far below the test area to avoid influencing performance
 
 ---
 
-**Caution:** Always verify the recorded errors and statistics independently before using them in any clinical or research context.
+## 🧪 How to Use
 
-**Note:** For clinical studies, ensure proper ethical approvals and patient consent before data collection.
+1. Open the test at:
+
+   **https://sd-devsecops.github.io/Line-Bisection-Test/cblt.html**
+
+2. When prompted, enter the number of trials (e.g., 50, 100, 150).
+
+3. For each line:
+   - Tap or click the perceived midpoint.
+
+4. When all trials are completed:
+   - A form will appear requesting:
+     - Name  
+     - Surname  
+     - Age  
+     - Years with Parkinson’s (if applicable)
+
+5. Press **Download CSV** to save results.  
+   The file includes:
+   - All trial errors  
+   - Signed/absolute deviations  
+   - Mean error  
+   - Standard deviation  
+   - Positive/negative error counts  
+   - Closest mark  
+   - Biggest miss  
+   - Demographic metadata
+
+---
+
+## ✨ Features
+
+- Researcher-defined number of trials  
+- Automatically disables drawing after the final trial  
+- Large responsive canvas for mobile/iPad usability  
+- Statistics displayed far below test area (reduces user influence)  
+- CSV export with all metrics and demographic info  
+- No external libraries required  
+- Fully offline capable (works without internet once loaded)
+
+---
+
+## 📁 Repository Contents
+
+- **`cblt.html`** – Full test interface + JavaScript logic  
+- **`README.md`** – Documentation
+
+---
+
+## ⚖ License
+
+This project is open-source and free for educational and research use.
+
+---
+
+## ⚠ Ethical Disclaimer
+
+For any clinical or research use:
+
+- Ensure appropriate ethical approval  
+- Obtain informed consent  
+- Validate all exported results independently  
 
