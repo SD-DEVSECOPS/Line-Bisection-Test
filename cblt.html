@@ -101,7 +101,9 @@ let drawing = false;
 let stats = {};
 let testFinished = false;
 
-// Responsive canvas
+/* ---------------------------
+    CANVAS AUTO-RESIZE
+--------------------------- */
 function resizeCanvas() {
     canvas.width = Math.min(window.innerWidth * 0.9, 900);
     canvas.height = Math.min(window.innerHeight * 0.65, 650);
@@ -109,20 +111,25 @@ function resizeCanvas() {
 }
 window.addEventListener("resize", resizeCanvas);
 
-// Draw horizontal line
+/* ---------------------------
+    DRAW RANDOM HORIZONTAL LINE
+--------------------------- */
 function drawLine() {
     if (testFinished) return;
 
     lineLength = canvas.width / 2;
+
     startX = Math.random() * (canvas.width - lineLength);
+
     const minY = canvas.height * 0.05;
     const maxY = canvas.height * 0.95;
     startY = minY + Math.random() * (maxY - minY);
+
     trueMidpointX = startX + lineLength / 2;
+
     drawCanvas();
 }
 
-// Draw all canvas content
 function drawCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -148,7 +155,9 @@ function getCoords(clientX, clientY) {
     return { x: clientX - rect.left, y: clientY - rect.top };
 }
 
-// Start drawing
+/* ---------------------------
+   DRAWING LOGIC
+--------------------------- */
 function startDraw(x, y) {
     if (testFinished) return;
 
@@ -165,28 +174,74 @@ function moveDraw(x, y) {
     drawCanvas();
 }
 
-function endDraw(x, y) {
+/* ---------------------------
+   PROPER LINE INTERSECTION
+--------------------------- */
+
+function getLineIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
+    const denom = (x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4);
+
+    if (denom === 0) return null; // parallel lines
+
+    const px = (
+        (x1*y2 - y1*x2) * (x3 - x4) -
+        (x1 - x2) * (x3*y4 - y3*x4)
+    ) / denom;
+
+    const py = (
+        (x1*y2 - y1*x2) * (y3 - y4) -
+        (y1 - y2) * (x3*y4 - y3*x4)
+    ) / denom;
+
+    return { x: px, y: py };
+}
+
+function isBetween(a, b, c) {
+    return Math.min(a,b) <= c && c <= Math.max(a,b);
+}
+
+/* ---------------------------
+   END DRAW & CALCULATE ERROR
+--------------------------- */
+
+function endDraw() {
     if (!drawing || testFinished) return;
 
     drawing = false;
 
-    const slope = (userLine.y2 - userLine.y1) /
-                 (userLine.x2 - userLine.x1 || 0.0001);
+    const L = userLine;
 
-    const intersectionX = userLine.x1 + (startY - userLine.y1) / slope;
+    const I = getLineIntersection(
+        L.x1, L.y1,
+        L.x2, L.y2,
+        startX, startY,
+        startX + lineLength, startY
+    );
 
-    const tolerance = 20;
-    if (intersectionX < startX - tolerance ||
-        intersectionX > startX + lineLength + tolerance) {
+    if (!I) {
         userLine = null;
         drawCanvas();
         return;
     }
 
-    const error = intersectionX - trueMidpointX;
-    const percentageError = (error / (lineLength / 2)) * 100;
-    const clamped = Math.max(-100, Math.min(100, percentageError));
+    // check intersection lies on BOTH segments
+    const onUser = 
+        isBetween(L.x1, L.x2, I.x) &&
+        isBetween(L.y1, L.y2, I.y);
 
+    const onTestLine =
+        isBetween(startX, startX + lineLength, I.x);
+
+    if (!onUser || !onTestLine) {
+        userLine = null;
+        drawCanvas();
+        return;
+    }
+
+    const error = I.x - trueMidpointX;
+    const percentageError = (error / (lineLength / 2)) * 100;
+
+    const clamped = Math.max(-100, Math.min(100, percentageError));
     errors.push(clamped);
 
     const sign = clamped >= 0 ? "+" : "-";
@@ -209,7 +264,10 @@ function endDraw(x, y) {
     drawLine();
 }
 
-// Compute statistics
+/* ---------------------------
+   STATISTICS
+--------------------------- */
+
 function calculateStats() {
     const negErrors = errors.filter(e => e < 0);
     const posErrors = errors.filter(e => e > 0);
@@ -258,7 +316,9 @@ function calculateStats() {
     `;
 }
 
-/* ===== TOUCH ===== */
+/* ---------------------------
+   TOUCH EVENTS
+--------------------------- */
 canvas.addEventListener("touchstart", e=>{
     e.preventDefault();
     const p = getCoords(e.touches[0].clientX, e.touches[0].clientY);
@@ -271,16 +331,19 @@ canvas.addEventListener("touchmove", e=>{
 });
 canvas.addEventListener("touchend", e=>{
     e.preventDefault();
-    const p = getCoords(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-    endDraw(p.x, p.y);
+    endDraw();
 });
 
-/* ===== MOUSE ===== */
+/* ---------------------------
+   MOUSE EVENTS
+--------------------------- */
 canvas.addEventListener("mousedown", e=>startDraw(e.offsetX, e.offsetY));
 canvas.addEventListener("mousemove", e=>moveDraw(e.offsetX, e.offsetY));
-canvas.addEventListener("mouseup",   e=>endDraw(e.offsetX, e.offsetY));
+canvas.addEventListener("mouseup",   e=>endDraw());
 
-/* ===== CSV ===== */
+/* ---------------------------
+   CSV EXPORT
+--------------------------- */
 document.getElementById("submitInfo").addEventListener("click", () => {
     const name = document.getElementById("name").value.trim();
     const surname = document.getElementById("surname").value.trim();
@@ -321,7 +384,9 @@ document.getElementById("submitInfo").addEventListener("click", () => {
     document.body.removeChild(link);
 });
 
-/* ===== START TEST ===== */
+/* ---------------------------
+   START TEST
+--------------------------- */
 document.getElementById("startTest").addEventListener("click", () => {
     const n = parseInt(document.getElementById("numLines").value);
     if (!n || n <= 0) {
