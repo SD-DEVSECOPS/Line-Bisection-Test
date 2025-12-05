@@ -58,14 +58,32 @@ body {
 #userForm input {
     margin: 5px;
 }
+/* Language buttons top-right */
+#langButtons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+#langButtons button {
+    margin-left: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
 </style>
 </head>
 <body>
 
-<h1>Line Bisection Test</h1>
+<!-- LANGUAGE BUTTONS -->
+<div id="langButtons">
+    <button onclick="setLanguage('en')">English</button>
+    <button onclick="setLanguage('tr')">Türkçe</button>
+    <button onclick="setLanguage('de')">Deutsch</button>
+</div>
+
+<h1 id="title">Line Bisection Test</h1>
 
 <div id="researcherForm">
-    <p><b>Enter number of lines for this test:</b></p>
+    <p id="numLinesLabel"><b>Enter number of lines for this test:</b></p>
     <input type="number" id="numLines" placeholder="Number of lines" required>
     <button id="startTest">Start Test</button>
 </div>
@@ -75,7 +93,7 @@ body {
 <div id="finalStats"></div>
 
 <div id="userForm">
-    <p><b>Please enter participant information before downloading results:</b></p>
+    <p id="userFormLabel"><b>Please enter participant information before downloading results:</b></p>
     <input type="text" id="name" placeholder="Name" required>
     <input type="text" id="surname" placeholder="Surname" required>
     <input type="number" id="age" placeholder="Age" required>
@@ -84,26 +102,112 @@ body {
 </div>
 
 <script>
+/* ---------------------------
+   LANGUAGE SYSTEM
+--------------------------- */
+const translations = {
+    en: {
+        title: "Line Bisection Test",
+        numLinesLabel: "Enter number of lines for this test:",
+        startTest: "Start Test",
+        userFormLabel: "Please enter participant information before downloading results:",
+        submitInfo: "Download CSV",
+        placeholders: { numLines: "Number of lines", name: "Name", surname: "Surname", age: "Age" },
+        csvHeaders: [
+            "Name","Surname","Age","Directional Bias (Signed Average Error)",
+            "Overall Accuracy Error (Absolute Average Error)","Standard Deviation",
+            "Negative Errors","Positive Errors","Average Negative Error",
+            "Average Positive Error","Closest Mark","Biggest Miss","All Draw Errors"
+        ],
+        statsLabels: {
+            totalDraws: "Total Draws", negErrors: "Negative Errors", posErrors: "Positive Errors",
+            directionalBias: "Directional Bias (Signed Average Error)", overallAccuracy: "Overall Accuracy Error (Absolute Average Error)",
+            stdDev: "Standard Deviation", avgNeg: "Average of Negative Errors", avgPos: "Average of Positive Errors",
+            closest: "Closest Mark", biggest: "Biggest Miss"
+        }
+    },
+    tr: {
+        title: "Çizgi Ortalama Testi",
+        numLinesLabel: "Bu test için çizgi sayısı:",
+        startTest: "Teste Başla",
+        userFormLabel: "Sonuçları indirmeden önce katılımcı bilgilerini giriniz:",
+        submitInfo: "CSV Kaydet",
+        placeholders: { numLines: "Çizgi sayısı", name: "İsim", surname: "Soyisim", age: "Yaş" },
+        csvHeaders: [
+            "İsim","Soyisim","Yaş","Yönsel Sapma",
+            "Doğruluk Hatası","Standart Sapma",
+            "Negatif Hatalar","Pozitif Hatalar","Ortalama Negatif Hata",
+            "Ortalama Pozitif Hata","En Yakın","En Uzak","Tüm Çizim Hataları"
+        ],
+        statsLabels: {
+            totalDraws: "Toplam Çizim", negErrors: "Negatif Hatalar", posErrors: "Pozitif Hatalar",
+            directionalBias: "Yönsel Sapma", overallAccuracy: "Doğruluk Hatası",
+            stdDev: "Standart Sapma", avgNeg: "Ortalama Negatif Hata", avgPos: "Ortalama Pozitif Hata",
+            closest: "En Yakın", biggest: "En Uzak"
+        }
+    },
+    de: {
+        title: "Linienhalbierungstest",
+        numLinesLabel: "Anzahl der Linien für diesen Test:",
+        startTest: "Test Starten",
+        userFormLabel: "Bitte Teilnehmerinformationen vor dem Herunterladen der Ergebnisse eingeben:",
+        submitInfo: "CSV Speichern",
+        placeholders: { numLines: "Anzahl der Linien", name: "Name", surname: "Nachname", age: "Alter" },
+        csvHeaders: [
+            "Name","Nachname","Alter","Richtungsfehler (Signierter Durchschnitt)",
+            "Genauigkeitsfehler (Absoluter Durchschnitt)","Standardabweichung",
+            "Negative Fehler","Positive Fehler","Durchschnitt Negative Fehler",
+            "Durchschnitt Positive Fehler","Nächster Fehler","Weitester Fehler","Alle Zeichnungsfehler"
+        ],
+        statsLabels: {
+            totalDraws: "Alle Zeichnungen", negErrors: "Negative Fehler", posErrors: "Positive Fehler",
+            directionalBias: "Richtungsfehler (Signierter Durchschnitt)", overallAccuracy: "Genauigkeitsfehler (Absoluter Durchschnitt)",
+            stdDev: "Standardabweichung", avgNeg: "Durchschnitt Negative Fehler", avgPos: "Durchschnitt Positive Fehler",
+            closest: "Nächster Fehler", biggest: "Weitester Fehler"
+        }
+    }
+};
+
+let LANG = "en";
+let testFinished = false;
+
+function detectLanguage() {
+    const lang = navigator.language.toLowerCase();
+    if(lang.startsWith("tr")) LANG="tr";
+    else if(lang.startsWith("de")) LANG="de";
+    else LANG="en";
+}
+
+function applyLanguage() {
+    const t = translations[LANG];
+    document.getElementById("title").textContent = t.title;
+    document.getElementById("numLinesLabel").textContent = t.numLinesLabel;
+    document.getElementById("startTest").textContent = t.startTest;
+    document.getElementById("userFormLabel").textContent = t.userFormLabel;
+    document.getElementById("submitInfo").textContent = t.submitInfo;
+    document.getElementById("numLines").placeholder = t.placeholders.numLines;
+    document.getElementById("name").placeholder = t.placeholders.name;
+    document.getElementById("surname").placeholder = t.placeholders.surname;
+    document.getElementById("age").placeholder = t.placeholders.age;
+    if(testFinished) calculateStats();
+}
+
+function setLanguage(l){ LANG = l; applyLanguage(); }
+
+detectLanguage();
+applyLanguage();
+
+/* ---------------------------
+   ORIGINAL WORKING CODE BELOW
+--------------------------- */
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-let lineLength = 0;
-let startX = 0;
-let startY = 0;
-let trueMidpointX = 0;
+let lineLength = 0, startX = 0, startY = 0, trueMidpointX = 0;
+let totalDraws = 100, drawCount = 0, errors = [];
+let userLine = null, drawing = false, stats = {};
 
-let totalDraws = 100;
-let drawCount = 0;
-let errors = [];
-
-let userLine = null;
-let drawing = false;
-let stats = {};
-let testFinished = false;
-
-/* ---------------------------
-    CANVAS AUTO-RESIZE
---------------------------- */
+/* CANVAS AUTO-RESIZE */
 function resizeCanvas() {
     canvas.width = Math.min(window.innerWidth * 0.9, 900);
     canvas.height = Math.min(window.innerHeight * 0.65, 650);
@@ -111,295 +215,164 @@ function resizeCanvas() {
 }
 window.addEventListener("resize", resizeCanvas);
 
-/* ---------------------------
-    DRAW RANDOM HORIZONTAL LINE
---------------------------- */
+/* DRAW RANDOM HORIZONTAL LINE */
 function drawLine() {
-    if (testFinished) return;
-
+    if(testFinished) return;
     lineLength = canvas.width / 2;
-
     startX = Math.random() * (canvas.width - lineLength);
-
     const minY = canvas.height * 0.05;
     const maxY = canvas.height * 0.95;
     startY = minY + Math.random() * (maxY - minY);
-
     trueMidpointX = startX + lineLength / 2;
-
     drawCanvas();
 }
 
 function drawCanvas() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+    ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.beginPath();
-    ctx.moveTo(startX, startY);
-    ctx.lineTo(startX + lineLength, startY);
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = "black";
-    ctx.stroke();
-
-    if (userLine) {
+    ctx.moveTo(startX,startY);
+    ctx.lineTo(startX+lineLength,startY);
+    ctx.lineWidth = 5; ctx.strokeStyle = "black"; ctx.stroke();
+    if(userLine){
         ctx.beginPath();
-        ctx.moveTo(userLine.x1, userLine.y1);
-        ctx.lineTo(userLine.x2, userLine.y2);
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = "blue";
-        ctx.stroke();
+        ctx.moveTo(userLine.x1,userLine.y1);
+        ctx.lineTo(userLine.x2,userLine.y2);
+        ctx.lineWidth = 3; ctx.strokeStyle = "blue"; ctx.stroke();
     }
 }
 
-function getCoords(clientX, clientY) {
+function getCoords(clientX, clientY){
     const rect = canvas.getBoundingClientRect();
     return { x: clientX - rect.left, y: clientY - rect.top };
 }
 
-/* ---------------------------
-   DRAWING LOGIC
---------------------------- */
-function startDraw(x, y) {
-    if (testFinished) return;
+function startDraw(x,y){ if(testFinished) return; drawing=true; userLine={x1:x,y1:y,x2:x,y2:y}; drawCanvas(); }
+function moveDraw(x,y){ if(!drawing||testFinished) return; userLine.x2=x; userLine.y2=y; drawCanvas(); }
 
-    drawing = true;
-    userLine = { x1: x, y1: y, x2: x, y2: y };
-    drawCanvas();
+function getLineIntersection(x1,y1,x2,y2,x3,y3,x4,y4){
+    const denom = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
+    if(denom===0) return null;
+    const px = ((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/denom;
+    const py = ((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/denom;
+    return {x:px,y:py};
 }
+function isBetween(a,b,c){ return Math.min(a,b)<=c&&c<=Math.max(a,b); }
 
-function moveDraw(x, y) {
-    if (!drawing || testFinished) return;
+function endDraw(){
+    if(!drawing||testFinished) return;
+    drawing=false;
+    const L=userLine;
+    const I=getLineIntersection(L.x1,L.y1,L.x2,L.y2,startX,startY,startX+lineLength,startY);
+    if(!I){ userLine=null; drawCanvas(); return; }
+    const onUser=isBetween(L.x1,L.x2,I.x)&&isBetween(L.y1,L.y2,I.y);
+    const onTestLine=isBetween(startX,startX+lineLength,I.x);
+    if(!onUser||!onTestLine){ userLine=null; drawCanvas(); return; }
 
-    userLine.x2 = x;
-    userLine.y2 = y;
-    drawCanvas();
-}
-
-/* ---------------------------
-   PROPER LINE INTERSECTION
---------------------------- */
-
-function getLineIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
-    const denom = (x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4);
-
-    if (denom === 0) return null; // parallel lines
-
-    const px = (
-        (x1*y2 - y1*x2) * (x3 - x4) -
-        (x1 - x2) * (x3*y4 - y3*x4)
-    ) / denom;
-
-    const py = (
-        (x1*y2 - y1*x2) * (y3 - y4) -
-        (y1 - y2) * (x3*y4 - y3*x4)
-    ) / denom;
-
-    return { x: px, y: py };
-}
-
-function isBetween(a, b, c) {
-    return Math.min(a,b) <= c && c <= Math.max(a,b);
-}
-
-/* ---------------------------
-   END DRAW & CALCULATE ERROR
---------------------------- */
-
-function endDraw() {
-    if (!drawing || testFinished) return;
-
-    drawing = false;
-
-    const L = userLine;
-
-    const I = getLineIntersection(
-        L.x1, L.y1,
-        L.x2, L.y2,
-        startX, startY,
-        startX + lineLength, startY
-    );
-
-    if (!I) {
-        userLine = null;
-        drawCanvas();
-        return;
-    }
-
-    // check intersection lies on BOTH segments
-    const onUser = 
-        isBetween(L.x1, L.x2, I.x) &&
-        isBetween(L.y1, L.y2, I.y);
-
-    const onTestLine =
-        isBetween(startX, startX + lineLength, I.x);
-
-    if (!onUser || !onTestLine) {
-        userLine = null;
-        drawCanvas();
-        return;
-    }
-
-    const error = I.x - trueMidpointX;
-    const percentageError = (error / (lineLength / 2)) * 100;
-
-    const clamped = Math.max(-100, Math.min(100, percentageError));
+    const error=I.x-trueMidpointX;
+    const percentageError=(error/(lineLength/2))*100;
+    const clamped=Math.max(-100,Math.min(100,percentageError));
     errors.push(clamped);
 
-    const sign = clamped >= 0 ? "+" : "-";
-    const errorsDiv = document.getElementById("errors");
-    const lineMsg = document.createElement("p");
-    lineMsg.textContent = `Draw ${drawCount + 1}: ${sign}${Math.abs(clamped).toFixed(2)}%`;
+    const sign=clamped>=0?"+":"-";
+    const errorsDiv=document.getElementById("errors");
+    const lineMsg=document.createElement("p");
+    lineMsg.textContent=`Draw ${drawCount+1}: ${sign}${Math.abs(clamped).toFixed(2)}%`;
     errorsDiv.appendChild(lineMsg);
 
-    drawCount++;
-    userLine = null;
+    drawCount++; userLine=null;
 
-    if (drawCount === totalDraws) {
-        testFinished = true;
+    if(drawCount===totalDraws){
+        testFinished=true;
         calculateStats();
-        document.getElementById("userForm").style.display = "block";
-        document.getElementById("finalStats").style.display = "block";
+        document.getElementById("userForm").style.display="block";
+        document.getElementById("finalStats").style.display="block";
         return;
     }
 
     drawLine();
 }
 
-/* ---------------------------
-   STATISTICS
---------------------------- */
+/* STATISTICS */
+function calculateStats(){
+    const negErrors = errors.filter(e=>e<0);
+    const posErrors = errors.filter(e=>e>0);
+    const negCount=negErrors.length; const posCount=posErrors.length;
+    const meanAbsError=errors.map(e=>Math.abs(e)).reduce((a,b)=>a+b,0)/errors.length;
+    const signedAverage=errors.reduce((a,b)=>a+b,0)/errors.length;
+    const meanNeg=negCount?negErrors.reduce((a,b)=>a+b,0)/negCount:0;
+    const meanPos=posCount?posErrors.reduce((a,b)=>a+b,0)/posCount:0;
+    const closestMark=Math.min(...errors.map(e=>Math.abs(e)));
+    const biggestMiss=errors.reduce((p,c)=>Math.abs(c)>Math.abs(p)?c:p,0);
+    const stdDev=Math.sqrt(errors.map(e=>(e-signedAverage)**2).reduce((a,b)=>a+b,0)/errors.length);
 
-function calculateStats() {
-    const negErrors = errors.filter(e => e < 0);
-    const posErrors = errors.filter(e => e > 0);
+    stats={signedAverage,meanAbsError,meanNeg,meanPos,negCount,posCount,closestMark,biggestMiss,stdDev};
 
-    const negCount = negErrors.length;
-    const posCount = posErrors.length;
+    const labels=translations[LANG].statsLabels;
 
-    const meanAbsError = errors.map(e => Math.abs(e))
-                               .reduce((a,b)=>a+b,0) / errors.length;
-
-    const signedAverage = errors.reduce((a,b)=>a+b,0) / errors.length;
-
-    const meanNeg = negCount ? negErrors.reduce((a,b)=>a+b,0)/negCount : 0;
-    const meanPos = posCount ? posErrors.reduce((a,b)=>a+b,0)/posCount : 0;
-
-    const closestMark = Math.min(...errors.map(e => Math.abs(e)));
-    const biggestMiss = errors.reduce((p,c)=>Math.abs(c)>Math.abs(p)?c:p,0);
-
-    const stdDev = Math.sqrt(errors.map(e => (e - signedAverage)**2).reduce((a,b)=>a+b,0) / errors.length);
-
-    stats = {
-        signedAverage,
-        meanAbsError,
-        meanNeg,
-        meanPos,
-        negCount,
-        posCount,
-        closestMark,
-        biggestMiss,
-        stdDev
-    };
-
-    document.getElementById("finalStats").innerHTML = `
-        Total Draws: ${totalDraws}<br>
-        Negative Errors: ${negCount}<br>
-        Positive Errors: ${posCount}<br><br>
-
-        Directional Bias (Signed Average Error): ${signedAverage.toFixed(2)}%<br>
-        Overall Accuracy Error (Absolute Average Error): ${meanAbsError.toFixed(2)}%<br>
-        Standard Deviation: ${stdDev.toFixed(2)}%<br><br>
-
-        Average of Negative Errors: ${meanNeg.toFixed(2)}%<br>
-        Average of Positive Errors: ${meanPos.toFixed(2)}%<br>
-        Closest Mark: ${closestMark.toFixed(2)}%<br>
-        Biggest Miss: ${biggestMiss.toFixed(2)}%
+    document.getElementById("finalStats").innerHTML=`
+        ${labels.totalDraws}: ${totalDraws}<br>
+        ${labels.negErrors}: ${negCount}<br>
+        ${labels.posErrors}: ${posCount}<br><br>
+        ${labels.directionalBias}: ${signedAverage.toFixed(2)}%<br>
+        ${labels.overallAccuracy}: ${meanAbsError.toFixed(2)}%<br>
+        ${labels.stdDev}: ${stdDev.toFixed(2)}%<br><br>
+        ${labels.avgNeg}: ${meanNeg.toFixed(2)}%<br>
+        ${labels.avgPos}: ${meanPos.toFixed(2)}%<br>
+        ${labels.closest}: ${closestMark.toFixed(2)}%<br>
+        ${labels.biggest}: ${biggestMiss.toFixed(2)}%
     `;
 }
 
-/* ---------------------------
-   TOUCH EVENTS
---------------------------- */
-canvas.addEventListener("touchstart", e=>{
-    e.preventDefault();
-    const p = getCoords(e.touches[0].clientX, e.touches[0].clientY);
-    startDraw(p.x, p.y);
-});
-canvas.addEventListener("touchmove", e=>{
-    e.preventDefault();
-    const p = getCoords(e.touches[0].clientX, e.touches[0].clientY);
-    moveDraw(p.x, p.y);
-});
-canvas.addEventListener("touchend", e=>{
-    e.preventDefault();
-    endDraw();
-});
+/* TOUCH EVENTS */
+canvas.addEventListener("touchstart", e=>{ e.preventDefault(); const p=getCoords(e.touches[0].clientX,e.touches[0].clientY); startDraw(p.x,p.y); });
+canvas.addEventListener("touchmove", e=>{ e.preventDefault(); const p=getCoords(e.touches[0].clientX,e.touches[0].clientY); moveDraw(p.x,p.y); });
+canvas.addEventListener("touchend", e=>{ e.preventDefault(); endDraw(); });
 
-/* ---------------------------
-   MOUSE EVENTS
---------------------------- */
-canvas.addEventListener("mousedown", e=>startDraw(e.offsetX, e.offsetY));
-canvas.addEventListener("mousemove", e=>moveDraw(e.offsetX, e.offsetY));
-canvas.addEventListener("mouseup",   e=>endDraw());
+/* MOUSE EVENTS */
+canvas.addEventListener("mousedown", e=>startDraw(e.offsetX,e.offsetY));
+canvas.addEventListener("mousemove", e=>moveDraw(e.offsetX,e.offsetY));
+canvas.addEventListener("mouseup", e=>endDraw());
 
-/* ---------------------------
-   CSV EXPORT
---------------------------- */
-document.getElementById("submitInfo").addEventListener("click", () => {
-    const name = document.getElementById("name").value.trim();
-    const surname = document.getElementById("surname").value.trim();
-    const age = document.getElementById("age").value.trim();
+/* CSV EXPORT */
+document.getElementById("submitInfo").addEventListener("click", ()=>{
+    const name=document.getElementById("name").value.trim();
+    const surname=document.getElementById("surname").value.trim();
+    const age=document.getElementById("age").value.trim();
+    if(!name||!surname||!age){ alert("Please fill all fields."); return; }
 
-    if (!name || !surname || !age) {
-        alert("Please fill all fields.");
-        return;
-    }
+    const uniqueCode=Math.floor(Math.random()*1e8).toString().padStart(8,'0');
+    const t=translations[LANG].csvHeaders;
+    let csvContent="\uFEFF";
+    csvContent+=`${t[0]},${name}\n${t[1]},${surname}\n${t[2]},${age}\n\n`;
+    csvContent+=`${t[3]},${stats.signedAverage.toFixed(2)}%\n`;
+    csvContent+=`${t[4]},${stats.meanAbsError.toFixed(2)}%\n`;
+    csvContent+=`${t[5]},${stats.stdDev.toFixed(2)}%\n`;
+    csvContent+=`${t[6]},${stats.negCount}\n`;
+    csvContent+=`${t[7]},${stats.posCount}\n`;
+    csvContent+=`${t[8]},${stats.meanNeg.toFixed(2)}%\n`;
+    csvContent+=`${t[9]},${stats.meanPos.toFixed(2)}%\n`;
+    csvContent+=`${t[10]},${stats.closestMark.toFixed(2)}%\n`;
+    csvContent+=`${t[11]},${stats.biggestMiss.toFixed(2)}%\n\n`;
+    csvContent+=`${t[12]}\n`;
+    errors.forEach((e,i)=>csvContent+=`${i+1},${e.toFixed(2)}\n`);
 
-    const uniqueCode = Math.floor(Math.random()*1e8).toString().padStart(8,'0');
-
-    let csv = "data:text/csv;charset=utf-8,";
-
-    csv += `Name,${name}\nSurname,${surname}\nAge,${age}\n\n`;
-
-    csv += "Final Statistics\n";
-    csv += `Directional Bias (Signed Average Error),${stats.signedAverage.toFixed(2)}%\n`;
-    csv += `Overall Accuracy Error (Absolute Average Error),${stats.meanAbsError.toFixed(2)}%\n`;
-    csv += `Standard Deviation,${stats.stdDev.toFixed(2)}%\n`;
-    csv += `Negative Errors,${stats.negCount}\n`;
-    csv += `Positive Errors,${stats.posCount}\n`;
-    csv += `Average Negative Error,${stats.meanNeg.toFixed(2)}%\n`;
-    csv += `Average Positive Error,${stats.meanPos.toFixed(2)}%\n`;
-    csv += `Closest Mark,${stats.closestMark.toFixed(2)}%\n`;
-    csv += `Biggest Miss,${stats.biggestMiss.toFixed(2)}%\n\n`;
-
-    csv += "Draw,Error (%)\n";
-    errors.forEach((e,i)=>csv += `${i+1},${e.toFixed(2)}\n`);
-
-    const uri = encodeURI(csv);
-    const link = document.createElement("a");
-    const fileName = `${uniqueCode}_${surname}_${age}.csv`;
-    link.setAttribute("href", uri);
-    link.setAttribute("download", fileName);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const blob=new Blob([csvContent],{type:"text/csv;charset=utf-8;"});
+    const link=document.createElement("a");
+    const fileName=`${uniqueCode}_${surname}_${age}.csv`;
+    link.setAttribute("href",URL.createObjectURL(blob));
+    link.setAttribute("download",fileName);
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
 });
 
-/* ---------------------------
-   START TEST
---------------------------- */
-document.getElementById("startTest").addEventListener("click", () => {
-    const n = parseInt(document.getElementById("numLines").value);
-    if (!n || n <= 0) {
-        alert("Please enter a valid number of lines.");
-        return;
-    }
-    totalDraws = n;
-
-    document.getElementById("researcherForm").style.display = "none";
-    canvas.style.display = "block";
-    document.getElementById("errors").style.display = "block";
-    document.getElementById("finalStats").style.display = "block";
-
+/* START TEST */
+document.getElementById("startTest").addEventListener("click", ()=>{
+    const n=parseInt(document.getElementById("numLines").value);
+    if(!n||n<=0){ alert("Please enter a valid number of lines."); return; }
+    totalDraws=n;
+    document.getElementById("researcherForm").style.display="none";
+    canvas.style.display="block";
+    document.getElementById("errors").style.display="block";
+    document.getElementById("finalStats").style.display="block";
     resizeCanvas();
 });
 </script>
