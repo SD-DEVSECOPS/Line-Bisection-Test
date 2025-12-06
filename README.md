@@ -1,4 +1,4 @@
-# Line Bisection Test (cLBT)
+# Line Bisection Test (LBT)
 
 This repository contains the **Computerized Line Bisection Test (cLBT)** — a browser-based assessment tool used to measure visuospatial attention, perceptual biases, and motor accuracy.  
 It is commonly used in neurological and neuropsychological research, including studies involving stroke, spatial neglect, and related conditions.
