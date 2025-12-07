@@ -93,10 +93,17 @@ The cLBT runs entirely in a web browser — no installation required.
 ---
 
 ## ⚖ License
-
-This project is open-source and free for educational and research use.
+This project is open-source for **research**, **educational**, and **clinical development** purposes.
 
 ---
+
+## 📚 **Required Citation**
+
+If you use this tool in **research**, **clinical evaluation**, **academic studies**, or **publications**,  
+you are **required to cite** the project to acknowledge its use and support continued development.
+
+Please use the following provisional citation:
+> For citation inquiries or academic use, contact: **sdswat93@gmail.com**
 
 ## ⚠ Ethical Disclaimer
 
@@ -106,17 +113,6 @@ For any clinical or research use:
 - Obtain informed consent  
 - Validate all exported results independently  
 
----
-## ⚖ License
-
-This project is open-source for **research**, **educational**, and **clinical development** purposes.
-## 🙏 Citation 
-
-If you use this tool in **research, clinical evaluation, a study, or a publication**,  
-**cite this project** to support continued development.
-Email:sdswat93@gmail.com
-
-This helps track academic use and encourages further improvements.
 ---
 
 ## ⚠ Ethical Disclaimer
