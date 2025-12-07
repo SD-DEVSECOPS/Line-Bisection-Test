@@ -107,6 +107,33 @@ For any clinical or research use:
 - Validate all exported results independently  
 
 ---
+## ⚖ License
 
-Project by Melisa Zengin  
-Powered by ChatGPT
+This project is open-source for **research**, **educational**, and **clinical development** purposes.
+
+---
+
+## ⚠ Ethical Disclaimer
+
+For proper clinical or research use:
+
+- Obtain relevant **ethical approvals**  
+- Secure **informed consent**  
+- Verify all exported data  
+- Ensure interpretation by trained professionals  
+
+---
+
+## 🙏 Citation Request
+
+If you use this tool in **research, clinical evaluation, a study, or a publication**,  
+**please cite this project** to support continued development.
+Email:sdswat93@gmail.com
+
+This helps track academic use and encourages further improvements.
+
+---
+
+**Project by:** *Zengin, M.*  
+**Enhanced by:** *ChatGPT*
+
