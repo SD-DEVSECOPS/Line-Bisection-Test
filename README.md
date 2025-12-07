@@ -105,14 +105,6 @@ you are **required to cite** the project to acknowledge its use and support cont
 Please use the following provisional citation:
 > For citation inquiries or academic use, contact: **sdswat93@gmail.com**
 
-## ⚠ Ethical Disclaimer
-
-For any clinical or research use:
-
-- Ensure appropriate ethical approval  
-- Obtain informed consent  
-- Validate all exported results independently  
-
 ---
 
 ## ⚠ Ethical Disclaimer
