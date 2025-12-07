@@ -106,15 +106,68 @@ Please use the following provisional citation:
 > For citation inquiries or academic use, contact: **sdswat93@gmail.com**
 
 ---
+## ⚠ Ethical & Usage Disclaimer
 
-## ⚠ Ethical Disclaimer
+This software is provided for **research**, **educational**, and **clinical development** purposes.  
+To ensure responsible and ethical use, the following conditions apply:
 
-For proper clinical or research use:
+---
 
-- Obtain relevant **ethical approvals**  
-- Secure **informed consent**  
-- Verify all exported data  
-- Ensure interpretation by trained professionals  
+### 🏥 Clinical Use
+
+- This tool **does not replace** standardized or professionally validated diagnostic instruments.  
+- Interpretation must only be performed by a **licensed clinician**, **neuropsychologist**, or a **qualified specialist**.  
+- All assessment outcomes must be **independently verified** before being used in any clinical or medical decision-making.  
+- Users must obtain **informed consent** from participants and appropriate **ethical approval** for all human-subject testing.
+
+---
+
+### 🔬 Research Use
+
+Researchers using this tool must:
+
+- Obtain **IRB / Ethics Committee approval** where required  
+- Follow local and international data protection regulations (e.g., **GDPR**, **HIPAA**)  
+- Properly **cite this project** in publications, reports, or presentations  
+- Ensure that data collection and storage follow recognized scientific and ethical standards  
+
+---
+
+### 💼 Commercial Use
+
+Commercial use of this software is **not permitted** without **explicit written authorization** from the project author.
+
+For licensing discussions, institutional deployment, or collaboration requests, contact:
+
+📧 **sdswat93@gmail.com**
+
+---
+
+### ⚖ Liability
+
+This software is provided **“as is”**, without any warranties, guarantees, or certifications.  
+The authors and contributors assume **no responsibility** for:
+
+- Misuse or misinterpretation  
+- Diagnostic mistakes  
+- Data corruption or loss  
+- Any direct or indirect damages arising from its use  
+
+---
+
+### ✅ User Agreement
+
+By using this tool, you agree to:
+
+- Follow all ethical guidelines listed above  
+- Obtain all required permissions  
+- Properly cite the software where relevant  
+- Use the results responsibly within the limits of the tool  
+
+Failure to follow these terms may result in misuse and invalidation of collected data.
+
+---
+
 
 ---
 
