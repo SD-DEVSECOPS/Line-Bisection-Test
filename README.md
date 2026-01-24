@@ -3,6 +3,13 @@
 This repository contains the **Computerized Line Bisection Test (cLBT)** — a browser-based assessment tool used to measure visuospatial attention, perceptual biases, and motor accuracy.  
 It is commonly used in neurological and neuropsychological research, including studies involving stroke, spatial neglect, and related conditions.
 
+<div align="center">
+
+## 🚀 [CLICK HERE TO START TEST](https://sd-devsecops.github.io/Line-Bisection-Test/cblt.html)
+**https://sd-devsecops.github.io/Line-Bisection-Test/cblt.html**
+
+</div>
+
 ---
 
 ## 📌 Overview
@@ -36,6 +43,18 @@ The tool features **Smart Resize Protection**. If a patient rotates the tablet o
 - The test does **NOT** reset.
 - The stimulus line and all user marks are **mathematically scaled** to the new dimensions accurately.
 - This prevents "moving goalposts" and ensures no data is lost during handling.
+
+### Device Sizing Reference Table
+
+| Device Model | Logical Width ($W_{px}$) | Physical Width ($W_{phys}$) | Hits 1200px Cap? | Line Length ($L_{phys}$) |
+| :--- | :--- | :--- | :--- | :--- |
+| **iPad Pro 12.9"** | 1366 px | 28.06 cm | **YES** | **12.32 cm** |
+| **iPad Pro 11"** | 1194 px | 24.76 cm | NO | **11.76 cm** |
+| **iPad Air (10.9")** | 1180 px | 24.76 cm | NO | **11.76 cm** |
+| **iPad (10.2")** | 1080 px | 25.06 cm | NO | **11.90 cm** |
+| **iPad Mini (8.3")** | 1133 px | 19.54 cm | NO | **9.28 cm** |
+
+> *Note: The iPad Mini is the only modern Apple tablet that falls slightly below the 10cm threshold using this formula.*
 
 ---
 
