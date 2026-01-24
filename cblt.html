@@ -100,6 +100,19 @@
     </div>
 
     <canvas id="canvas"></canvas>
+
+    <!-- TEST CONTROLS (Visible only during test) -->
+    <div id="testControls"
+        style="display:none; text-align:center; margin-bottom:10px; width:100%; top:0; left:0; background:#f4f4f4; padding:10px 0;">
+        <button id="btnReset"
+            style="padding:10px 15px; margin:0 5px; background:#f0ad4e; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Reset</button>
+        <button id="btnFinish"
+            style="padding:10px 15px; margin:0 5px; background:#5bc0de; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Finish</button>
+        <button id="btnMain"
+            style="padding:10px 15px; margin:0 5px; background:#d9534f; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Main
+            Menu</button>
+    </div>
+
     <div id="errors"></div>
     <div id="finalStats"></div>
 
@@ -123,6 +136,9 @@
                 startTest: "Start Test",
                 userFormLabel: "Please enter participant information before downloading results:",
                 submitInfo: "Download CSV",
+                btnReset: "Reset",
+                btnFinish: "Finish",
+                btnMain: "Main Menu",
                 placeholders: { numLines: "Number of lines", name: "Name", surname: "Surname", age: "Age" },
                 csvHeaders: [
                     "Name", "Surname", "Age", "Directional Bias (Signed Average Error)",
@@ -143,6 +159,9 @@
                 startTest: "Teste Başla",
                 userFormLabel: "Sonuçları indirmeden önce katılımcı bilgilerini giriniz:",
                 submitInfo: "CSV Kaydet",
+                btnReset: "Yeniden Başla",
+                btnFinish: "Bitir",
+                btnMain: "Ana Sayfa",
                 placeholders: { numLines: "Çizgi sayısı", name: "İsim", surname: "Soyisim", age: "Yaş" },
                 csvHeaders: [
                     "İsim", "Soyisim", "Yaş", "Yönsel Sapma",
@@ -163,6 +182,9 @@
                 startTest: "Test Starten",
                 userFormLabel: "Bitte Teilnehmerinformationen vor dem Herunterladen der Ergebnisse eingeben:",
                 submitInfo: "CSV Speichern",
+                btnReset: "Neustarten",
+                btnFinish: "Beenden",
+                btnMain: "Hauptmenü",
                 placeholders: { numLines: "Anzahl der Linien", name: "Name", surname: "Nachname", age: "Alter" },
                 csvHeaders: [
                     "Name", "Nachname", "Alter", "Richtungsfehler (Signierter Durchschnitt)",
@@ -194,6 +216,11 @@
             document.getElementById("title").textContent = t.title;
             document.getElementById("numLinesLabel").textContent = t.numLinesLabel;
             document.getElementById("startTest").textContent = t.startTest;
+
+            document.getElementById("btnReset").textContent = t.btnReset;
+            document.getElementById("btnFinish").textContent = t.btnFinish;
+            document.getElementById("btnMain").textContent = t.btnMain;
+
             document.getElementById("userFormLabel").textContent = t.userFormLabel;
             document.getElementById("submitInfo").textContent = t.submitInfo;
             document.getElementById("numLines").placeholder = t.placeholders.numLines;
@@ -332,6 +359,8 @@
                 calculateStats();
                 document.getElementById("userForm").style.display = "block";
                 document.getElementById("finalStats").style.display = "block";
+                // Keep controls visible for Reset/Main Menu
+                // document.getElementById("testControls").style.display = "none";
                 return;
             }
 
@@ -415,11 +444,74 @@
             const n = parseInt(document.getElementById("numLines").value);
             if (!n || n <= 0) { alert("Please enter a valid number of lines."); return; }
             totalDraws = n;
+            drawCount = 0;
+            errors = [];
+            testFinished = false;
+
+            // UI Updates
+            document.getElementById("title").style.display = "none"; // Hide title
             document.getElementById("researcherForm").style.display = "none";
+            document.getElementById("testControls").style.display = "block";
             canvas.style.display = "block";
             document.getElementById("errors").style.display = "block";
-            document.getElementById("finalStats").style.display = "block";
+            document.getElementById("errors").innerHTML = "";
+            document.getElementById("finalStats").style.display = "none";
+            document.getElementById("userForm").style.display = "none";
+
+            // Move controls to top by inserting before canvas if needed, or CSS positioning. 
+            // The current CSS structure has controls above canvas (in DOM order).
+            // But we want to ensure it's at the very top.
+            const controls = document.getElementById("testControls");
+            document.body.insertBefore(controls, document.body.firstChild);
+
             resizeCanvas();
+        });
+
+        /* 1. RESET (Same settings, fresh start) */
+        document.getElementById("btnReset").addEventListener("click", () => {
+            if (!confirm("Restart current test?")) return;
+            drawCount = 0;
+            errors = [];
+            testFinished = false;
+            document.getElementById("errors").innerHTML = "";
+            document.getElementById("finalStats").style.display = "none";
+            document.getElementById("userForm").style.display = "none";
+            resizeCanvas(); // Will trigger drawLine since count < total
+        });
+
+        /* 2. FINISH (End early, show results) */
+        document.getElementById("btnFinish").addEventListener("click", () => {
+            if (testFinished) return;
+            if (!confirm("Finish test early and calculate results?")) return;
+            testFinished = true;
+            // If we finish early, totalDraws becomes current drawCount for stats purposes?
+            // Or we just calculate stats based on what we have. 
+            // Logic: adjust totalDraws to avoid 'missing' data in stats or just run stats on existing errors.
+            // calculateStats() uses 'errors.length'.
+            totalDraws = drawCount; // Update total to match what was actually done
+            calculateStats();
+            document.getElementById("userForm").style.display = "block";
+            document.getElementById("finalStats").style.display = "block";
+            // User requested these buttons. If finished, maybe show Main Menu?
+            // Let's keep controls visible but maybe disable Finish/Reset?
+            // Actually standard is to show results form.
+            document.getElementById("title").style.display = "block"; // Show title again
+        });
+
+        /* 3. MAIN MENU (Back to setup) */
+        document.getElementById("btnMain").addEventListener("click", () => {
+            if (!confirm("Return to Main Menu? Data will be lost.")) return;
+            testFinished = false;
+            drawCount = 0;
+            errors = [];
+
+            document.getElementById("title").style.display = "block";
+            document.getElementById("researcherForm").style.display = "block";
+            document.getElementById("testControls").style.display = "none";
+            canvas.style.display = "none";
+            document.getElementById("errors").style.display = "none";
+            document.getElementById("finalStats").style.display = "none";
+            document.getElementById("userForm").style.display = "none";
         });
     </script>
 </body>
