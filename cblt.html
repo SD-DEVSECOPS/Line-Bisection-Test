@@ -268,13 +268,14 @@
                 btnMain: "Main Menu",
                 placeholders: { numLines: "Number of lines", name: "Name", surname: "Surname", age: "Age" },
                 csvHeaders: [
-                    "--- CORE CLINICAL STATISTICS ---",
-                    "Participant Name", "Participant Surname", "Participant Age",
-                    "Total Draws", "Negative Errors Count", "Positive Errors Count",
-                    "Directional Bias (%)", "Overall Accuracy (%)", "Standard Deviation (%)",
+                    "--- PARTICIPANT INFO ---",
+                    "Name", "Surname", "Age",
+                    "--- TEST RESULTS ---",
+                    "Total Draws", "Negative Errors", "Positive Errors",
+                    "Directional Bias (Signed Avg %)", "Overall Accuracy (Abs Avg %)", "Standard Deviation (%)",
+                    "Directional Bias (Pixels)", "Avg Error (Abs Pixels)", "Avg Error (Est. cm)", "Avg Error (Est. inch)",
+                    "Avg Negative Pixels", "Avg Positive Pixels",
                     "Avg Negative %", "Avg Positive %", "Closest Mark %", "Biggest Miss %",
-                    "--- EXPERIMENTAL METRICS (ESTIMATED) ---",
-                    "Directional Bias (Pixels)", "Abs Avg Error (Pixels)", "Abs Avg Error (cm)", "Abs Avg Error (inch)",
                     "--- RAW DATA ---",
                     "Index, pct, px, cm, inch"
                 ],
@@ -312,13 +313,15 @@
                 btnMain: "Ana Sayfa",
                 placeholders: { numLines: "Çizgi sayısı", name: "İsim", surname: "Soyisim", age: "Yaş" },
                 csvHeaders: [
-                    "--- TEMEL KLİNİK İSTATİSTİKLER ---",
-                    "Katılımcı İsmi", "Katılımcı Soyismi", "Katılımcı Yaşı",
-                    "Toplam Çizim", "Negatif Hata Sayısı", "Pozitif Hata Sayısı",
+                    "--- KATILIMCI BİLGİLERİ ---",
+                    "İsim", "Soyisim", "Yaş",
+                    "--- TEST SONUÇLARI ---",
+                    "Toplam Çizim", "Negatif Hatalar", "Pozitif Hatalar",
                     "Yönsel Sapma (İşaretli Ortalama Hata %)", "Genel Doğruluk Hatası (Mutlak Ortalama Hata %)", "Standart Sapma (%)",
-                    "Negatif Hata Ort. %", "Pozitif Hata Ort. %", "En Yakın İşaretleme %", "En Uzak İşaretleme %",
-                    "--- DENEYSEL ÖLÇÜMLER (TAHMİNİ) ---",
-                    "Yönsel Sapma (Piksel)", "Mutlak Ort. Hata (Piksel)", "Mutlak Ort. Hata (cm)", "Mutlak Ort. Hata (inch)",
+                    "Yönsel Sapma (Piksel)", "Ort. Hata (Piksel)", "Ort. Hata (Tahmini cm)", "Ort. Hata (Tahmini inch)",
+                    "Ort. Negatif Piksel", "Ort. Pozitif Piksel",
+                    "Negatif Hataların Ortalaması (%)", "Pozitif Hataların Ortalaması (%)",
+                    "En Yakın İşaretleme %", "En Uzak İşaretleme %",
                     "--- HAM VERİ ---",
                     "Sıra, pct, px, cm, inch"
                 ],
@@ -356,13 +359,15 @@
                 btnMain: "Hauptmenü",
                 placeholders: { numLines: "Anzahl der Linien", name: "Name", surname: "Nachname", age: "Alter" },
                 csvHeaders: [
-                    "--- KLINISCHE KERNSTATISTIKEN ---",
+                    "--- TEILNEHMERINFORMATIONEN ---",
                     "Vorname", "Nachname", "Alter",
+                    "--- TESTERGEBNISSE ---",
                     "Gesamtzeichnungen", "Negative Fehler", "Positive Fehler",
-                    "Richtungsfehler (%)", "Genauigkeitsfehler (%)", "Standardabweichung (%)",
-                    "Durchschnitt Negativ %", "Durchschnitt Positiv %", "Nächster Marker %", "Weitester Marker %",
-                    "--- EXPERIMENTELLE METRIKEN (GESCHÄTZT) ---",
-                    "Richtungsfehler (Px)", "Absoluter Durchschnitt (Px)", "Absoluter Durchschnitt (cm)", "Absoluter Durchschnitt (inch)",
+                    "Richtungsfehler (Durchschnitt %)", "Genauigkeitsfehler (Durchschnitt %)", "Standardabweichung (%)",
+                    "Richtungsfehler (Pixel)", "Durchschn. Fehler (Pixel)", "Durchschn. Fehler (Gesch. cm)", "Durchschn. Fehler (Gesch. inch)",
+                    "Durchschn. Negative Pixel", "Durchschn. Positive Pixel",
+                    "Durchschnitt Negative Fehler (%)", "Durchschnitt Positive Fehler (%)",
+                    "Nächster Marker %", "Weitester Marker %",
                     "--- ROHDATEN ---",
                     "Index, pct, px, cm, inch"
                 ],
@@ -554,7 +559,8 @@
             const L = userLine;
 
             const dist = Math.sqrt((L.x2 - L.x1) ** 2 + (L.y2 - L.y1) ** 2);
-            if (dist > 200) {
+            const maxStroke = lineLength * 0.40; // 40% of the test line length
+            if (dist > maxStroke) {
                 userLine = null; drawCanvas(); return;
             }
 
@@ -674,26 +680,34 @@
             const t = translations[LANG].csvHeaders;
             let csvContent = "\uFEFF";
 
-            csvContent += `"${t[0]}"\n`;
-            csvContent += `"${t[1]}",${name}\n"${t[2]}",${surname}\n"${t[3]}",${age}\n`;
-            csvContent += `"${t[4]}",${errors.length}\n`;
-            csvContent += `"${t[5]}",${stats.negCount}\n`;
-            csvContent += `"${t[6]}",${stats.posCount}\n\n`;
-            csvContent += `"${t[7]}",${stats.signedAverage.toFixed(2)}\n`;
-            csvContent += `"${t[8]}",${stats.meanAbsError.toFixed(2)}\n`;
-            csvContent += `"${t[9]}",${stats.stdDev.toFixed(2)}\n\n`;
-            csvContent += `"${t[10]}",${stats.meanNeg.toFixed(2)}\n`;
-            csvContent += `"${t[11]}",${stats.meanPos.toFixed(2)}\n`;
-            csvContent += `"${t[12]}",${stats.closestMark.toFixed(2)}\n`;
-            csvContent += `"${t[13]}",${stats.biggestMiss.toFixed(2)}\n\n`;
+            // 1. Participant Info
+            csvContent += `"${t[0]}"\n"${t[1]}",${name}\n"${t[2]}",${surname}\n"${t[3]}",${age}\n\n`;
 
-            csvContent += `"${t[14]}"\n`;
-            csvContent += `"${t[15]}",${stats.biasPx.toFixed(1)}\n`;
-            csvContent += `"${t[16]}",${stats.absAvgPx.toFixed(1)}\n`;
-            csvContent += `"${t[17]}",${stats.absAvgCm.toFixed(2)}\n`;
-            csvContent += `"${t[18]}",${stats.absAvgInch.toFixed(2)}\n\n`;
+            // 2. Test Results (Aligned with Finish Screen)
+            csvContent += `"${t[4]}"\n`;
+            csvContent += `"${t[5]}",${errors.length}\n`;
+            csvContent += `"${t[6]}",${stats.negCount}\n`;
+            csvContent += `"${t[7]}",${stats.posCount}\n\n`;
 
-            csvContent += `"${t[19]}"\n"${t[20]}"\nIndex,pct,px,cm,inch\n`;
+            csvContent += `"${t[8]}",${stats.signedAverage.toFixed(2)}\n`;
+            csvContent += `"${t[9]}",${stats.meanAbsError.toFixed(2)}\n`;
+            csvContent += `"${t[10]}",${stats.stdDev.toFixed(2)}\n\n`;
+
+            csvContent += `"${t[11]}",${stats.biasPx.toFixed(1)}\n`;
+            csvContent += `"${t[12]}",${stats.absAvgPx.toFixed(1)}\n`;
+            csvContent += `"${t[13]}",${stats.absAvgCm.toFixed(2)}\n`;
+            csvContent += `"${t[14]}",${stats.absAvgInch.toFixed(2)}\n\n`;
+
+            csvContent += `"${t[15]}",${stats.avgNegPx.toFixed(1)}\n`;
+            csvContent += `"${t[16]}",${stats.avgPosPx.toFixed(1)}\n\n`;
+
+            csvContent += `"${t[17]}",${stats.meanNeg.toFixed(2)}\n`;
+            csvContent += `"${t[18]}",${stats.meanPos.toFixed(2)}\n`;
+            csvContent += `"${t[19]}",${stats.closestMark.toFixed(2)}\n`;
+            csvContent += `"${t[20]}",${stats.biggestMiss.toFixed(2)}\n\n`;
+
+            // 3. Raw Data
+            csvContent += `"${t[21]}"\n"${t[22]}"\n`;
             lineHistory.forEach((h) => csvContent += `${h.index},${h.errorPct.toFixed(2)},${h.errorPx.toFixed(1)},${h.errorCm.toFixed(2)},${h.errorInch.toFixed(2)}\n`);
 
             const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -840,4 +854,3 @@
 </body>
 
 </html>
-
