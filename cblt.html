@@ -277,7 +277,7 @@
                     "Avg Negative Pixels", "Avg Positive Pixels",
                     "Avg Negative %", "Avg Positive %", "Closest Mark %", "Biggest Miss %",
                     "--- RAW DATA ---",
-                    "Index, pct, px, cm, inch"
+                    "Index,pct,px,cm,inch"
                 ],
                 statsLabels: {
                     totalDraws: "Total Draws", negErrors: "Negative Errors", posErrors: "Positive Errors",
@@ -323,7 +323,7 @@
                     "Negatif Hataların Ortalaması (%)", "Pozitif Hataların Ortalaması (%)",
                     "En Yakın İşaretleme %", "En Uzak İşaretleme %",
                     "--- HAM VERİ ---",
-                    "Sıra, pct, px, cm, inch"
+                    "Sıra,pct,px,cm,inch"
                 ],
                 statsLabels: {
                     totalDraws: "Toplam Çizim", negErrors: "Negatif Hatalar", posErrors: "Pozitif Hatalar",
@@ -369,7 +369,7 @@
                     "Durchschnitt Negative Fehler (%)", "Durchschnitt Positive Fehler (%)",
                     "Nächster Marker %", "Weitester Marker %",
                     "--- ROHDATEN ---",
-                    "Index, pct, px, cm, inch"
+                    "Index,pct,px,cm,inch"
                 ],
                 statsLabels: {
                     totalDraws: "Gesamtzeichnungen", negErrors: "Negative Fehler", posErrors: "Positive Fehler",
@@ -707,7 +707,7 @@
             csvContent += `"${t[20]}",${stats.biggestMiss.toFixed(2)}\n\n`;
 
             // 3. Raw Data
-            csvContent += `"${t[21]}"\n"${t[22]}"\n`;
+            csvContent += `"${t[21]}"\n${t[22]}\n`;
             lineHistory.forEach((h) => csvContent += `${h.index},${h.errorPct.toFixed(2)},${h.errorPx.toFixed(1)},${h.errorCm.toFixed(2)},${h.errorInch.toFixed(2)}\n`);
 
             const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
