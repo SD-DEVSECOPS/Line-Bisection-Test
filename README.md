@@ -53,13 +53,27 @@ To ensure clinical validity across different screen sizes, the tool uses a dynam
   *Note: Discarding is currently silent (no popup); the red visual is the feedback.*
 
 ### Device Sizing Reference Table
-| Device Model | Logical Width ($W_{px}$) | Physical Width ($W_{phys}$) | Hits 1200px Cap? | Line Length ($L_{phys}$) |
-| :--- | :--- | :--- | :--- | :--- |
-| **iPad Pro 12.9"** | 1366 px | 28.06 cm | **YES** | **12.32 cm** |
-| **iPad Pro 11"** | 1194 px | 24.76 cm | NO | **11.76 cm** |
-| **iPad Air (10.9")** | 1180 px | 24.76 cm | NO | **11.76 cm** |
-| **iPad (10.2")** | 1080 px | 25.06 cm | NO | **11.90 cm** |
-| **iPad Mini (8.3")** | 1133 px | 19.54 cm | NO | **9.28 cm** |
+
+All physical length estimates below follow the **same assumption used in code**:
+
+- 1 inch = 96 CSS pixels  
+- 1 cm ≈ 37.795 px  
+
+The stimulus line length is computed as:
+
+lineLength = min(canvasWidth / 2, 600px)
+
+| Device Model | Logical Width (px) | Canvas Width Used (px) | Line Length (px) | Estimated Line Length (cm) |
+|-------------|--------------------|------------------------|------------------|----------------------------|
+| **iPad Pro 12.9"** | 1366 | 1200 (capped) | 600 | **15.88 cm** |
+| **iPad Pro 11"** | 1194 | 1194 | 597 | 15.80 cm |
+| **iPad Air (10.9")** | 1180 | 1180 | 590 | 15.61 cm |
+| **iPad (10.2")** | 1080 | 1080 | 540 | 14.29 cm |
+| **iPad Mini (8.3")** | 1133 | 1133 | 566.5 | 14.99 cm |
+
+> Note: These values are **estimates**, not guaranteed physical measurements.  
+> Actual physical size depends on browser scaling and device calibration.
+
 
 > *Note: Physical size estimates above assume a standard browser PPI (96). Screen-specific physical line length should be verified with a ruler if 100% precision is required.*
 
