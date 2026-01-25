@@ -517,10 +517,13 @@
                 ctx.lineWidth = 5; ctx.strokeStyle = "#333"; ctx.stroke();
             }
             if (userLine) {
+                const dist = Math.sqrt((userLine.x2 - userLine.x1) ** 2 + (userLine.y2 - userLine.y1) ** 2);
                 ctx.beginPath();
                 ctx.moveTo(userLine.x1, userLine.y1);
                 ctx.lineTo(userLine.x2, userLine.y2);
-                ctx.lineWidth = 4; ctx.strokeStyle = "#0b74de"; ctx.stroke();
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = dist > 200 ? "#d9534f" : "#0b74de";
+                ctx.stroke();
             }
         }
 
@@ -559,8 +562,7 @@
             const L = userLine;
 
             const dist = Math.sqrt((L.x2 - L.x1) ** 2 + (L.y2 - L.y1) ** 2);
-            const maxStroke = lineLength * 0.40; // 40% of the test line length
-            if (dist > maxStroke) {
+            if (dist > 200) {
                 userLine = null; drawCanvas(); return;
             }
 
@@ -719,6 +721,10 @@
         });
 
         document.getElementById("exportPattern").addEventListener("click", () => {
+            const name = document.getElementById("name").value.trim();
+            const surname = document.getElementById("surname").value.trim();
+            const age = document.getElementById("age").value.trim();
+            if (!name || !surname || !age) { alert(translations[LANG].alerts.fillAll); return; }
             if (!lineHistory.length) { alert(translations[LANG].alerts.noData); return; }
 
             const exportCanvas = document.createElement("canvas");
