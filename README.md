@@ -1,98 +1,91 @@
 # Line Bisection Test (LBT)
 
-This repository contains the **Computerized Line Bisection Test (cLBT)** — a high-precision, browser-based assessment tool used to measure visuospatial attention, perceptual biases, and motor accuracy. It is designed for neurological research, including studies involving stroke, unilateral spatial neglect, and related cognitive conditions.
+This repository contains the **Computerized Line Bisection Test (cLBT)** — a browser-based assessment tool used to measure visuospatial attention and motor accuracy. 
 
-<div align="center">
+> [!CAUTION]
+> **CRITICAL SCIENTIFIC DISCLAIMER**  
+> All calculations (cm, inch, averages, SD) provided by this tool are **CONVENIENCE ESTIMATIONS** and may be **INACCURATE** due to screen scaling, uncalibrated PPI, or software edge cases. 
+> 
+> **Researchers are strongly advised to:**
+> 1. **Do not rely** on the on-screen summary for final clinical conclusions.
+> 2. **Recompute all metrics** independently using the **Raw Data (px)** columns in the exported CSV.
+> 3. **Independently validate** the internal logic against your specific research protocol.
+
+---
 
 ## 🚀 [CLICK HERE TO START TEST](https://sd-devsecops.github.io/Line-Bisection-Test/index.html)
-**https://sd-devsecops.github.io/Line-Bisection-Test/index.html**
-
-</div>
 
 ---
 
-## 📌 Overview
+## 📐 Mathematical Calculations & Formulas
 
-The test displays horizontal lines on an interactive canvas. For each trial, the participant marks what they believe is the **center** of the line. 
+The system records the interaction between a user stroke (vector $\vec{U}$) and the stimulus line (vector $\vec{S}$).
 
-The system provides immediate clinical feedback and professional data exports:
-- **Core Statistics**: Signed bisection error (%), absolute error, and standard deviation.
-- **Physical Estimation**: Estimated displacement in **Pixels (px)**, **Centimeters (cm)**, and **Inches (in)**.
-- **Visual Auditing**: High-resolution PNG export of the patient's bisection pattern with errors mapped.
-- **Longitudinal Export**: Structured CSV for statistical analysis (SPSS, R, Python).
+### 1. Raw Pixel Displacement (`px`)
+Calculated by finding the intersection point $I(x, y)$ of the user's mark and the horizontal stimulus.
+$$\Delta px = I_x - X_{midpoint}$$
+- **Negative (-)**: Leftward error (Mark is to the left of true center).
+- **Positive (+)**: Rightward error (Mark is to the right of true center).
 
----
+### 2. Percentage Error (`pct`)
+Normalizes the error relative to the stimulus size. $R$ is the radius (half-length) of the line.
+$$Error\% = \left( \frac{\Delta px}{R} \right) \times 100$$
+- *Clamped at $\pm 100\%$ if the mark is outside the line.*
 
-## ⚙ Technical Specifications
+### 3. Estimated Physical Units (`cm` / `inch`)
+**WARNING:** These assume a standard browser density of **96 DPI**.
+- **Inches**: $inch = \Delta px / 96$
+- **Centimeters**: $cm = \Delta px / 37.795$
+- *Physical accuracy varies by device. Use a physical ruler for calibration.*
 
-### Stimulus Sizing & Clinical Validity
-To ensure clinical validity across different screen sizes, the tool uses a dynamic rendering engine:
-
-- **1200px Clinical Cap**: On ultra-large devices (like the iPad Pro 12.9"), the stimulus line is capped at 1200 logical pixels. This ensures the line doesn't exceed a practical visual field (approx. 12cm physically).
-- **Universal Scaling**: On small-to-medium tablets, the stimulus length is exactly **50% of the available canvas width**, maintaining a consistent relative challenge regardless of hardware.
-- **Standardized Stroke Cap**: User marks are limited to **200px**. If a mark exceeds this, it turns **Red** 🔴 and is silently cleared. This prevents "slashing" and ensures marks are intentional "midpoint ticks."
-
-### Device Sizing Reference Table
-| Device Model | Logical Width ($W_{px}$) | Physical Width ($W_{phys}$) | Hits 1200px Cap? | Line Length ($L_{phys}$) |
-| :--- | :--- | :--- | :--- | :--- |
-| **iPad Pro 12.9"** | 1366 px | 28.06 cm | **YES** | **12.32 cm** |
-| **iPad Pro 11"** | 1194 px | 24.76 cm | NO | **11.76 cm** |
-| **iPad Air (10.9")** | 1180 px | 24.76 cm | NO | **11.76 cm** |
-| **iPad (10.2")** | 1080 px | 25.06 cm | NO | **11.90 cm** |
-| **iPad Mini (8.3")** | 1133 px | 19.54 cm | NO | **9.28 cm** |
-
-> *Note: Estimated using standard browser PPI (96). Screen-specific physical line length should be verified with a ruler if 100% precision is required.*
-
-### Mobile Data Safety
-The tool features **Smart Resize Protection**. If a patient rotates the tablet or the browser UI changes during a session:
-- The test does **NOT** reset.
-- The stimulus line and all previous marks are **mathematically scaled** to the new dimensions instantly.
-- Coordinates are recalculated using relative ratios, preserving the clinical integrity of the session.
+### 4. Aggregate Statistics (Session Summary)
+- **Signed Avg % (Directional Bias)**: $\frac{1}{N} \sum_{i=1}^N Error\%_i$. (Note: Left/Right errors can cancel out).
+- **Absolute Avg % (Overall Accuracy)**: $\frac{1}{N} \sum_{i=1}^N |Error\%_i|$. Measures total precision.
+- **Standard Deviation (Consistency)**: $\sigma = \sqrt{\frac{\sum (x_i - \bar{x})^2}{N}}$. Higher SD = higher variability/inattention.
 
 ---
 
-## 📊 Data Interpretation & Metrics
+## ⚙ Validation Logic (What makes a "Good Mark"?)
 
-### Directional Bias (The "Neglect" Metric)
-The primary clinical indicator is the **Signed Average Error (%)**:
-- **Negative Value (-)**: Indicates a **Leftward Bias**. In neglect patients, this often suggests right-hemisphere damage affecting the left visual field (marking "center" too far to the left).
-- **Positive Value (+)**: Indicates a **Rightward Bias**.
-- **Percentage Calculation**: Error is calculated as a percentage of the line's half-length. `(Error_px / (Line_Length / 2)) * 100`.
+To maintain data integrity, a mark is only recorded if it passes these three filters:
 
-### Accuracy & Consistency
-- **Overall Accuracy (Abs Avg %)**: The average distance from the center, ignoring direction. Useful for measuring general motor precision or "coarseness" of response.
-- **Standard Deviation (SD %)**: Measures consistency. A high SD indicates highly variable performance, which can be a marker for fluctuating attention or severe coordination deficit.
-
-### Calculations for Research
-The app calculates the intersection between the user's stroke and the stimulus line using a **parametric dot-product**.
-**Researchers can verify data manually using the Raw CSV columns:**
-- `pct`: Percentage error (relative).
-- `px`: Raw pixel displacement from center.
-- `cm / inch`: Estimated physical displacement.
+1.  **Stroke Length Cap (200px)**: If a mark exceeds **200px**, it turns **Red** 🔴 and is discarded. This filters out random large swipes.
+2.  **Intersection Check**: The user's stroke must physically cross the stimulus line.
+3.  **Y-Tolerance (< 1.5px)**: The intersection must occur precisely on the line. Marks that are too high or too low are ignored.
 
 ---
 
-## 🧪 How to Use
+## 📱 Technical Specifications & Scaling
 
-1. **Setup**: Enter the trials (e.g., 10, 20). Trials are randomized in position and Y-offset.
-2. **Task**: Instruct the patient to draw a short vertical tick at the center of the line.
-3. **Controls**:
-   - **Reset**: Restarts the current test (clears all current session data).
-   - **Finish**: End early to see results for the markers placed so far.
-   - **Main Menu**: Clears data and returns to the trials screen.
-4. **Export**: 
-   - Fill in Participant Name, Surname, and Age (Required for export safety).
-   - Press **Download CSV** for numerical analysis.
-   - Press **Download Pattern** for a visual PDF-ready report showing every mark.
+The app uses **Smart Scaling** to ensure continuity if a tablet is rotated or resized.
+
+| Device Model | Logical Width ($W_{px}$) | Hits 1200px Cap? | Est. Line Length ($L_{phys}$) |
+| :--- | :--- | :--- | :--- |
+| **iPad Pro 12.9"** | 1366 px | **YES** | **12.32 cm** |
+| **iPad Air / Pro 11"** | ~1180 px | NO | **11.76 cm** |
+| **iPad (10.2")** | 1080 px | NO | **11.90 cm** |
+| **iPad Mini (8.3")** | 1133 px | NO | **9.28 cm** |
+
+> *Scaling Formula: New $X = Old X \times (New Canvas W / Old Canvas W)$*
 
 ---
 
-## ⚠ Ethical & Research Notice
+## 🧪 Usage & Export
 
-- **Clinical Disclaimer**: This tool **does not replace** standardized diagnostic instruments. Interpretation must only be performed by a **licensed clinician**.
-- **Verification**: Built-in calculations are for convenience. Researchers are encouraged to verify raw data against their specific study protocols.
-- **Required Citation**: If you use this tool in publications, it is **required** to cite the project.
-> For citation inquiries or institutional use, contact: **sdswat93@gmail.com**
+1. **Setup**: Enter trials (e.g., 20). Randomized horizontal/vertical positioning.
+2. **Task**: Instruct participant to mark the center with a short vertical tick.
+3. **Export**: 
+   - **Download CSV**: Full experimental data for external re-calculation.
+   - **Download Pattern**: Visual audit PNG showing true center vs. user mark.
+
+---
+
+## ⚖ Ethical & Usage Notice
+- **Clinical Use**: Must be supervised by a **licensed specialist**. This is a screening tool, not a diagnostic finality.
+- **Required Citation**: If used in research or publication, you are **required** to cite this project.
+- **Commercial Use**: Prohibited without written consent.
+
+📧 **Contact**: [sdswat93@gmail.com](mailto:sdswat93@gmail.com)
 
 ---
 **Project by:** *Zengin, M.*
