@@ -81,7 +81,8 @@
 
         #canvasWrap {
             width: 100%;
-            max-width: 1100px;
+            max-width: 1200px;
+            /* Layout constraint */
             margin-top: 15px;
             background: #fff;
             border-radius: 8px;
@@ -143,7 +144,7 @@
         #errors {
             margin-top: 20px;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1200px;
             max-height: 150px;
             overflow-y: auto;
             background: #fff;
@@ -439,16 +440,18 @@
         let totalDraws = 10, drawCount = 0, errors = [], lineHistory = [];
         let userLine = null, drawing = false, stats = {};
 
+        // DRIFT PROTECTION: Explicitly track the last logical width/height to calculate ratios accurately
+        let lastW = 0, lastH = 0;
         let DPR = 1;
+
         function resizeCanvas() {
             const wrap = document.getElementById('canvasWrap');
             if (wrap.style.display === 'none') return;
 
-            const oldStyleW = parseFloat(canvas.style.width) || wrap.clientWidth;
-            const oldStyleH = parseFloat(canvas.style.height) || Math.round(window.innerHeight * 0.70);
-
             const newStyleW = wrap.clientWidth;
             const newStyleH = Math.round(window.innerHeight * 0.70);
+
+            if (newStyleW === 0) return; // Hidden or folded
 
             DPR = window.devicePixelRatio || 1;
             canvas.width = Math.floor(newStyleW * DPR);
@@ -457,10 +460,10 @@
             canvas.style.height = newStyleH + 'px';
             ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-            if (lineLength > 0) {
-                // IMPORTANT: Scale coordinates to match new dimensions (Handles device rotation)
-                const ratioW = newStyleW / oldStyleW;
-                const ratioH = newStyleH / oldStyleH;
+            // If we have existing geometry, scale it based on the previous logical dimensions
+            if (lastW > 0 && lastH > 0 && (lastW !== newStyleW || lastH !== newStyleH)) {
+                const ratioW = newStyleW / lastW;
+                const ratioH = newStyleH / lastH;
 
                 startX *= ratioW;
                 lineLength *= ratioW;
@@ -486,6 +489,12 @@
                         errorInch: (h.errorPx * ratioW) / 96
                     }));
                 }
+            }
+
+            lastW = newStyleW;
+            lastH = newStyleH;
+
+            if (lineLength > 0) {
                 drawCanvas();
             } else {
                 if (drawCount < totalDraws) drawLine();
@@ -498,7 +507,9 @@
             const W = canvas.width / DPR;
             const H = canvas.height / DPR;
 
-            lineLength = W / 2;
+            // CLINICAL JS CAP: Explicitly cap the line length at 600px in code (matches 1200px container logic)
+            lineLength = Math.min(600, W / 2);
+
             startX = Math.random() * (W - lineLength);
             const minY = H * 0.2;
             const maxY = H * 0.8;
