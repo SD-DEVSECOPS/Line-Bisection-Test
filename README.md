@@ -47,9 +47,9 @@ All on-screen summaries (averages, SD, cm/in conversion) should be treated as **
 ### Stimulus Sizing & Clinical Validity
 To ensure clinical validity across different screen sizes, the tool uses a dynamic rendering engine:
 
-- **1200px Clinical Cap**: On ultra-large devices (like the iPad Pro 12.9"), the stimulus line is capped at 1200 logical pixels. This ensures the line doesn't exceed a practical visual field (approx. 12cm physically).
+- **600px Clinical Cap**: On ultra-large devices (like the iPad Pro 12.9"), the stimulus line length is capped at 600 logical pixels. This ensures the line doesn't exceed a practical visual field (approx. 15.8cm physically at 96 DPI).
 - **Universal Scaling**: On small-to-medium tablets, the stimulus length is exactly **50% of the available canvas width**, maintaining a consistent relative challenge regardless of hardware.
-- **Standardized Stroke Cap (Current Code Behavior)**: User marks are limited to **200px**. If a mark exceeds this, it turns **Red** 🔴 while drawing and is **discarded** when released (the stroke is cleared and the trial is not recorded).  
+- **Standardized Stroke Cap**: User marks are limited to **200px**. If a mark exceeds this, it turns **Red** 🔴 while drawing and is **discarded** when released (the stroke is cleared and the trial is not recorded).  
   *Note: Discarding is currently silent (no popup); the red visual is the feedback.*
 
 ### Device Sizing Reference Table
