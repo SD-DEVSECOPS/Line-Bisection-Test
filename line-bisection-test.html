@@ -283,6 +283,41 @@
         <br>
         <button id="submitInfo">Download CSV</button>
         <button id="exportPattern" style="background:#6c757d;">Download Pattern</button>
+
+        <hr style="margin:18px 0; opacity:.3;">
+
+        <div id="optionalSaveBox" style="text-align:left; margin-top:10px;">
+            <p style="margin:0 0 8px; font-weight:600;">
+                (Opsiyonel) Sonuçları anonim olarak kaydetmek için:
+            </p>
+
+            <label style="display:block; font-size:13px; margin:10px 0 6px;">
+                Email (opsiyonel) — girmezsen kaydetmeyiz
+            </label>
+            <input type="email" id="email" placeholder="Email (opsiyonel)">
+
+            <label style="display:block; font-size:13px; margin:12px 0 6px;">
+                Daha önce inme (stroke) geçirdiniz mi? (opsiyonel)
+            </label>
+
+            <div style="display:flex; gap:14px; align-items:center; font-size:14px; margin-bottom:10px;">
+                <label style="display:flex; gap:6px; align-items:center;">
+                    <input type="radio" name="stroke" value="1"> Evet
+                </label>
+                <label style="display:flex; gap:6px; align-items:center;">
+                    <input type="radio" name="stroke" value="0"> Hayır
+                </label>
+                <label style="display:flex; gap:6px; align-items:center; opacity:.7;">
+                    <input type="radio" name="stroke" value="" checked> Belirtmek istemiyorum
+                </label>
+            </div>
+
+            <button id="submitResults" style="background:#198754; margin-top:6px;">
+                Sonuçları Kaydet
+            </button>
+
+            <div id="saveStatus" style="margin-top:10px; font-size:13px;"></div>
+        </div>
     </div>
 
     <script>
@@ -483,6 +518,9 @@
         function setLanguage(l) { LANG = l; applyLanguage(); }
 
         detectLanguage();
+
+        const API_BASE = "https://lbt-api.sdswat93.workers.dev";
+        const EMAIL_SALT = "601b76274dc69137a5ad48fc279c35bc";
 
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
@@ -772,6 +810,18 @@
             return (s || "").replace(/[^\w\-]+/g, '_').replace(/_+/g, '_').slice(0, 40);
         }
 
+        async function sha256Hex(str) {
+            const enc = new TextEncoder().encode(str);
+            const buf = await crypto.subtle.digest("SHA-256", enc);
+            const bytes = Array.from(new Uint8Array(buf));
+            return bytes.map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+
+        async function participantIdFromEmail(email) {
+            const norm = (email || "").trim().toLowerCase();
+            return sha256Hex(norm + "|" + EMAIL_SALT);
+        }
+
         document.getElementById("submitInfo").addEventListener("click", () => {
             const name = document.getElementById("name").value.trim();
             const surname = document.getElementById("surname").value.trim();
@@ -886,6 +936,114 @@
             link.download = `Pattern_${uniqueCode}_${safeFilePart(name)}_${safeFilePart(surname)}_${age}.png`;
             link.href = exportCanvas.toDataURL("image/png");
             link.click();
+        });
+
+        document.getElementById("submitResults").addEventListener("click", async () => {
+            const statusEl = document.getElementById("saveStatus");
+            statusEl.textContent = "";
+            statusEl.style.color = "#333";
+
+            // 0) SAYFA HTTPS mi? (mixed content fix)
+            if (location.protocol !== "https:" && location.hostname !== "localhost") {
+                statusEl.textContent = "Bu özellik için sayfa HTTPS üzerinden açılmalı (aksi halde tarayıcı istekleri engeller).";
+                statusEl.style.color = "#b02a37";
+                return;
+            }
+
+            // 1) Email opsiyonel ama kaydetmek için gerekli
+            const email = (document.getElementById("email").value || "").trim();
+            if (!email) {
+                statusEl.textContent = "Email girilmediği için kaydetmedik (opsiyonel).";
+                statusEl.style.color = "#856404";
+                return;
+            }
+
+            // 2) Yaş kontrol
+            const age = parseInt(document.getElementById("age").value.trim(), 10);
+            if (!Number.isFinite(age) || age < 1 || age > 120) {
+                statusEl.textContent = "Yaş alanı geçersiz.";
+                statusEl.style.color = "#b02a37";
+                return;
+            }
+
+            // 3) stroke (seçilmediyse 0)
+            const strokeVal = document.querySelector('input[name="stroke"]:checked')?.value;
+            const stroke = (strokeVal === "1") ? 1 : 0;
+
+            // 4) sonuç var mı?
+            if (!lineHistory.length || !errors.length || !stats || !Number.isFinite(stats.signedAverage)) {
+                statusEl.textContent = "Henüz sonuç yok. Önce testi bitirin.";
+                statusEl.style.color = "#b02a37";
+                return;
+            }
+
+            // 5) canvas ölçüleri (CSS px)
+            const wrap = document.getElementById("canvasWrap");
+            const canvasCssW = Math.round(wrap.clientWidth);
+            const canvasCssH = Math.round(window.innerHeight * 0.70);
+
+            // 6) participant_id
+            let participant_id;
+            try {
+                participant_id = await participantIdFromEmail(email);
+            } catch (e) {
+                statusEl.textContent = "Email hash oluşturulamadı.";
+                statusEl.style.color = "#b02a37";
+                return;
+            }
+
+            const payload = {
+                participant_id,
+                age,
+                total_draw: errors.length,
+                directional_bias_pct: Number(stats.signedAverage),
+                overall_accuracy_pct: Number(stats.meanAbsError),
+                std_dev_pct: Number(stats.stdDev),
+                canvas_px_w: canvasCssW,
+                canvas_px_h: canvasCssH,
+                stroke
+            };
+
+            // 7) REQUEST (NETWORK HATASINI GERÇEK MESAJLA YAKALA)
+            const url = `${API_BASE}/api/results`;
+
+            try {
+                statusEl.textContent = "Kaydediliyor...";
+                statusEl.style.color = "#0f5132";
+
+                // timeout ekledim: request takılı kalmasın
+                const ctrl = new AbortController();
+                const t = setTimeout(() => ctrl.abort(), 12000);
+
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                    signal: ctrl.signal
+                });
+
+                clearTimeout(t);
+
+                const text = await res.text(); // önce text oku
+                let data = {};
+                try { data = JSON.parse(text); } catch { data = { raw: text }; }
+
+                if (!res.ok || !data.ok) {
+                    statusEl.textContent = `Kaydedilemedi: HTTP ${res.status} - ${data?.error || data?.raw || "Unknown error"}`;
+                    statusEl.style.color = "#b02a37";
+                    return;
+                }
+
+                statusEl.textContent = "✅ Sonuçlar kaydedildi (anonim).";
+                statusEl.style.color = "#0f5132";
+            } catch (e) {
+                // BURASI ÖNEMLİ: gerçek network sebebini gösterir
+                const msg =
+                    (e?.name === "AbortError") ? "Timeout (12sn): Worker cevap vermedi." :
+                        (e?.message || "Ağ hatası");
+                statusEl.textContent = `Kaydedilemedi: ${msg}`;
+                statusEl.style.color = "#b02a37";
+            }
         });
 
         document.getElementById("startTest").addEventListener("click", () => {
