@@ -779,9 +779,6 @@
                 exCtx.fillText(`${sign}${h.errorPct.toFixed(2)}% (${Math.abs(h.errorCm).toFixed(2)}cm)`, drawStartX + h.lineLength + 15, y + 4);
             });
 
-            const name = document.getElementById("name").value.trim() || "Participant";
-            const surname = document.getElementById("surname").value.trim() || "";
-            const age = document.getElementById("age").value.trim() || "0";
             const uniqueCode = Math.floor(Math.random() * 1e8).toString().padStart(8, '0');
 
             const link = document.createElement("a");
