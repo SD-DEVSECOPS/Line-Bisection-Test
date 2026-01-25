@@ -3,88 +3,219 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
     <title>Line Bisection Test</title>
     <style>
+        /* Modern Reset & Base */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
             min-height: 100vh;
             margin: 0;
-            background: #f4f4f4;
-            padding-top: 20px;
+            background: #f8f9fa;
+            padding: 20px;
+            overflow-x: hidden;
         }
 
-        #researcherForm {
-            margin-bottom: 20px;
-            background: white;
-            padding: 15px;
-            border: 1px solid #ccc;
-        }
-
-        #researcherForm input {
-            margin: 5px;
-        }
-
-        #canvas {
-            border: 1px solid black;
-            touch-action: none;
-            background: white;
-            display: none;
-        }
-
-        #errors {
-            margin-top: 50px;
-            width: 90%;
-            max-width: 600px;
-            text-align: left;
-            overflow-y: scroll;
-            max-height: 200px;
-            background: white;
-            padding: 10px;
-            border: 1px solid #ccc;
-            display: none;
-        }
-
-        #finalStats {
-            margin-top: 20px;
-            font-weight: normal;
-            display: none;
-        }
-
-        #userForm {
-            display: none;
-            margin-top: 20px;
-            background: white;
-            padding: 15px;
-            border: 1px solid #ccc;
-        }
-
-        #userForm input {
-            margin: 5px;
+        h1 {
+            margin: 10px 0 20px;
+            font-size: 24px;
+            color: #333;
         }
 
         /* Language buttons top-right */
         #langButtons {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 15px;
+            z-index: 20;
         }
 
         #langButtons button {
             margin-left: 6px;
-            padding: 5px 10px;
+            padding: 6px 12px;
             cursor: pointer;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background: #fff;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        #langButtons button:hover {
+            background: #f0f0f0;
+        }
+
+        #researcherForm {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        #researcherForm input {
+            width: 80%;
+            padding: 10px;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            -webkit-user-select: auto;
+            user-select: auto;
+        }
+
+        #canvasWrap {
+            width: 100%;
+            max-width: 1100px;
+            margin-top: 15px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            display: none;
+        }
+
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 70vh;
+            touch-action: none;
+            cursor: crosshair;
+        }
+
+        #testControls {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(248, 249, 250, 0.9);
+            backdrop-filter: blur(5px);
+            display: none;
+        }
+
+        #testControls button {
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #testControls button:active {
+            opacity: 0.8;
+        }
+
+        #btnReset {
+            background: #f0ad4e;
+        }
+
+        #btnFinish {
+            background: #5bc0de;
+        }
+
+        #btnMain {
+            background: #d9534f;
+        }
+
+        #errors {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 1100px;
+            max-height: 150px;
+            overflow-y: auto;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            font-family: monospace;
+            font-size: 13px;
+            display: none;
+            scroll-behavior: smooth;
+        }
+
+        #errors p {
+            margin: 4px 0;
+            border-bottom: 1px solid #f9f9f9;
+            padding-bottom: 2px;
+        }
+
+        #finalStats {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 500px;
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 15px;
+            line-height: 1.6;
+            display: none;
+        }
+
+        #userForm {
+            width: 100%;
+            max-width: 500px;
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: none;
+            text-align: center;
+        }
+
+        #userForm input {
+            width: 90%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            -webkit-user-select: auto;
+            user-select: auto;
+        }
+
+        #startTest,
+        #submitInfo {
+            padding: 12px 30px;
+            background: #0b74de;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        #startTest:hover,
+        #submitInfo:hover {
+            background: #095fb6;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- LANGUAGE BUTTONS -->
     <div id="langButtons">
         <button onclick="setLanguage('en')">English</button>
         <button onclick="setLanguage('tr')">Türkçe</button>
@@ -95,22 +226,19 @@
 
     <div id="researcherForm">
         <p id="numLinesLabel"><b>Enter number of lines for this test:</b></p>
-        <input type="number" id="numLines" placeholder="Number of lines" required>
+        <input type="number" id="numLines" placeholder="Number of lines" min="1" max="100" value="10" required>
+        <br>
         <button id="startTest">Start Test</button>
     </div>
 
-    <canvas id="canvas"></canvas>
+    <div id="testControls">
+        <button id="btnReset">Reset</button>
+        <button id="btnFinish">Finish</button>
+        <button id="btnMain">Main Menu</button>
+    </div>
 
-    <!-- TEST CONTROLS (Visible only during test) -->
-    <div id="testControls"
-        style="display:none; text-align:center; margin-bottom:10px; width:100%; top:0; left:0; background:#f4f4f4; padding:10px 0;">
-        <button id="btnReset"
-            style="padding:10px 15px; margin:0 5px; background:#f0ad4e; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Reset</button>
-        <button id="btnFinish"
-            style="padding:10px 15px; margin:0 5px; background:#5bc0de; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Finish</button>
-        <button id="btnMain"
-            style="padding:10px 15px; margin:0 5px; background:#d9534f; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Main
-            Menu</button>
+    <div id="canvasWrap">
+        <canvas id="canvas"></canvas>
     </div>
 
     <div id="errors"></div>
@@ -123,12 +251,10 @@
         <input type="number" id="age" placeholder="Age" required>
         <br>
         <button id="submitInfo">Download CSV</button>
+        <button id="exportPattern" style="background:#6c757d;">Download Pattern</button>
     </div>
 
     <script>
-        /* ---------------------------
-           LANGUAGE SYSTEM
-        --------------------------- */
         const translations = {
             en: {
                 title: "Line Bisection Test",
@@ -136,21 +262,42 @@
                 startTest: "Start Test",
                 userFormLabel: "Please enter participant information before downloading results:",
                 submitInfo: "Download CSV",
+                exportPattern: "Download Pattern",
                 btnReset: "Reset",
                 btnFinish: "Finish",
                 btnMain: "Main Menu",
                 placeholders: { numLines: "Number of lines", name: "Name", surname: "Surname", age: "Age" },
                 csvHeaders: [
-                    "Name", "Surname", "Age", "Directional Bias (Signed Average Error)",
-                    "Overall Accuracy Error (Absolute Average Error)", "Standard Deviation",
-                    "Negative Errors", "Positive Errors", "Average Negative Error",
-                    "Average Positive Error", "Closest Mark", "Biggest Miss", "All Draw Errors"
+                    "--- CORE CLINICAL STATISTICS ---",
+                    "Participant Name", "Participant Surname", "Participant Age",
+                    "Total Draws", "Negative Errors Count", "Positive Errors Count",
+                    "Directional Bias (%)", "Overall Accuracy (%)", "Standard Deviation (%)",
+                    "Avg Negative %", "Avg Positive %", "Closest Mark %", "Biggest Miss %",
+                    "--- EXPERIMENTAL METRICS (ESTIMATED) ---",
+                    "Directional Bias (Pixels)", "Abs Avg Error (Pixels)", "Abs Avg Error (cm)", "Abs Avg Error (inch)",
+                    "--- RAW DATA ---",
+                    "Index, pct, px, cm, inch"
                 ],
                 statsLabels: {
                     totalDraws: "Total Draws", negErrors: "Negative Errors", posErrors: "Positive Errors",
-                    directionalBias: "Directional Bias (Signed Average Error)", overallAccuracy: "Overall Accuracy Error (Absolute Average Error)",
-                    stdDev: "Standard Deviation", avgNeg: "Average of Negative Errors", avgPos: "Average of Positive Errors",
-                    closest: "Closest Mark", biggest: "Biggest Miss"
+                    directionalBias: "Directional Bias (Signed Avg %)", overallAccuracy: "Overall Accuracy (Abs Avg %)",
+                    stdDev: "Standard Deviation (%)", avgNeg: "Avg Negative %", avgPos: "Avg Positive %",
+                    closest: "Closest Mark %", biggest: "Biggest Miss %",
+                    avgPixels: "Avg Error (Abs Pixels)", biasPixels: "Directional Bias (Pixels)",
+                    negPx: "Avg Negative Pixels", posPx: "Avg Positive Pixels",
+                    avgCm: "Avg Error (Est. cm)", avgInch: "Avg Error (Est. inch)"
+                },
+                alerts: {
+                    fillAll: "Please fill all fields.",
+                    validNumLines: "Please enter a valid number of lines (1-100).",
+                    noDrawings: "No drawings yet. Please bisect at least one line.",
+                    noData: "No data recorded for this session.",
+                    strokeTooLong: "Stroke too long! Please draw a shorter mark."
+                },
+                confirms: {
+                    reset: "Restart current test? Current progress will be lost.",
+                    finish: "Finish test early and calculate results?",
+                    main: "Return to Main Menu? Data will be lost."
                 }
             },
             tr: {
@@ -159,21 +306,42 @@
                 startTest: "Teste Başla",
                 userFormLabel: "Sonuçları indirmeden önce katılımcı bilgilerini giriniz:",
                 submitInfo: "CSV Kaydet",
+                exportPattern: "Şablonu İndir (PNG)",
                 btnReset: "Yeniden Başla",
                 btnFinish: "Bitir",
                 btnMain: "Ana Sayfa",
                 placeholders: { numLines: "Çizgi sayısı", name: "İsim", surname: "Soyisim", age: "Yaş" },
                 csvHeaders: [
-                    "İsim", "Soyisim", "Yaş", "Yönsel Sapma (İşaretli Ortalama Hata)",
-                    "Genel Doğruluk Hatası (Mutlak Ortalama Hata)", "Standart Sapma",
-                    "Negatif Hatalar", "Pozitif Hatalar", "Negatif Hataların Ortalaması",
-                    "Pozitif Hataların Ortalaması", "En Yakın İşaretleme", "En Uzak İşaretleme", "Tüm Çizim Hataları"
+                    "--- TEMEL KLİNİK İSTATİSTİKLER ---",
+                    "Katılımcı İsmi", "Katılımcı Soyismi", "Katılımcı Yaşı",
+                    "Toplam Çizim", "Negatif Hata Sayısı", "Pozitif Hata Sayısı",
+                    "Yönsel Sapma (%)", "Genel Doğruluk (%)", "Standart Sapma (%)",
+                    "Negatif Hata Ort. %", "Pozitif Hata Ort. %", "En Yakın İşaretleme %", "En Uzak İşaretleme %",
+                    "--- DENEYSEL ÖLÇÜMLER (TAHMİNİ) ---",
+                    "Yönsel Sapma (Piksel)", "Mutlak Ort. Hata (Piksel)", "Mutlak Ort. Hata (cm)", "Mutlak Ort. Hata (inch)",
+                    "--- HAM VERİ ---",
+                    "Sıra, pct, px, cm, inch"
                 ],
                 statsLabels: {
                     totalDraws: "Toplam Çizim", negErrors: "Negatif Hatalar", posErrors: "Pozitif Hatalar",
-                    directionalBias: "Yönsel Sapma (İşaretli Ortalama Hata)", overallAccuracy: "Genel Doğruluk Hatası (Mutlak Ortalama Hata)",
-                    stdDev: "Standart Sapma", avgNeg: "Negatif Hataların Ortalaması", avgPos: "Pozitif Hataların Ortalaması",
-                    closest: "En Yakın İşaretleme", biggest: "En Uzak İşaretleme"
+                    directionalBias: "Yönsel Sapma (İşaretli Ortalama Hata %)", overallAccuracy: "Genel Doğruluk Hatası (Mutlak Ortalama Hata %)",
+                    stdDev: "Standart Sapma (%)", avgNeg: "Negatif Hataların Ortalaması (%)", avgPos: "Pozitif Hataların Ortalaması (%)",
+                    closest: "En Yakın İşaretleme %", biggest: "En Uzak İşaretleme %",
+                    avgPixels: "Ort. Hata (Piksel)", biasPixels: "Yönsel Sapma (Piksel)",
+                    negPx: "Ort. Negatif Piksel", posPx: "Ort. Pozitif Piksel",
+                    avgCm: "Ort. Hata (Tahmini cm)", avgInch: "Ort. Hata (Tahmini inch)"
+                },
+                alerts: {
+                    fillAll: "Lütfen tüm alanları doldurun.",
+                    validNumLines: "Lütfen geçerli bir çizgi sayısı girin (1-100).",
+                    noDrawings: "Henüz çizim yapılmadı. Lütfen en az bir çizgiyi bölün.",
+                    noData: "Henüz veri kaydedilmedi.",
+                    strokeTooLong: "Çizgi çok uzun! Lütfen daha kısa bir işaretleme yapın."
+                },
+                confirms: {
+                    reset: "Mevcut testi yeniden başlatmak istediğinize emin misiniz? İlerleme silinecektir.",
+                    finish: "Testi erken bitirip sonuçları hesaplamak istiyor musunuz?",
+                    main: "Ana menüye dönmek istiyor musunuz? Veriler silinecektir."
                 }
             },
             de: {
@@ -182,21 +350,42 @@
                 startTest: "Test Starten",
                 userFormLabel: "Bitte Teilnehmerinformationen vor dem Herunterladen der Ergebnisse eingeben:",
                 submitInfo: "CSV Speichern",
+                exportPattern: "Muster Speichern (PNG)",
                 btnReset: "Neustarten",
                 btnFinish: "Beenden",
                 btnMain: "Hauptmenü",
                 placeholders: { numLines: "Anzahl der Linien", name: "Name", surname: "Nachname", age: "Alter" },
                 csvHeaders: [
-                    "Name", "Nachname", "Alter", "Richtungsfehler (Signierter Durchschnitt)",
-                    "Genauigkeitsfehler (Absoluter Durchschnitt)", "Standardabweichung",
-                    "Negative Fehler", "Positive Fehler", "Durchschnitt Negative Fehler",
-                    "Durchschnitt Positive Fehler", "Nächster Fehler", "Weitester Fehler", "Alle Zeichnungsfehler"
+                    "--- KLINISCHE KERNSTATISTIKEN ---",
+                    "Vorname", "Nachname", "Alter",
+                    "Gesamtzeichnungen", "Negative Fehler", "Positive Fehler",
+                    "Richtungsfehler (%)", "Genauigkeitsfehler (%)", "Standardabweichung (%)",
+                    "Durchschnitt Negativ %", "Durchschnitt Positiv %", "Nächster Marker %", "Weitester Marker %",
+                    "--- EXPERIMENTELLE METRIKEN (GESCHÄTZT) ---",
+                    "Richtungsfehler (Px)", "Absoluter Durchschnitt (Px)", "Absoluter Durchschnitt (cm)", "Absoluter Durchschnitt (inch)",
+                    "--- ROHDATEN ---",
+                    "Index, pct, px, cm, inch"
                 ],
                 statsLabels: {
-                    totalDraws: "Alle Zeichnungen", negErrors: "Negative Fehler", posErrors: "Positive Fehler",
-                    directionalBias: "Richtungsfehler (Signierter Durchschnitt)", overallAccuracy: "Genauigkeitsfehler (Absoluter Durchschnitt)",
-                    stdDev: "Standardabweichung", avgNeg: "Durchschnitt Negative Fehler", avgPos: "Durchschnitt Positive Fehler",
-                    closest: "Nächster Fehler", biggest: "Weitester Fehler"
+                    totalDraws: "Gesamtzeichnungen", negErrors: "Negative Fehler", posErrors: "Positive Fehler",
+                    directionalBias: "Richtungsfehler (Durchschnitt %)", overallAccuracy: "Genauigkeitsfehler (Durchschnitt %)",
+                    stdDev: "Standardabweichung (%)", avgNeg: "Durchschnitt Negative Fehler (%)", avgPos: "Durchschnitt Positive Fehler (%)",
+                    closest: "Nächster Marker %", biggest: "Weitester Marker %",
+                    avgPixels: "Durchschn. Fehler (Pixel)", biasPixels: "Richtungsfehler (Pixel)",
+                    negPx: "Durchschn. Negative Pixel", posPx: "Durchschn. Positive Pixel",
+                    avgCm: "Durchschn. Fehler (Gesch. cm)", avgInch: "Durchschn. Fehler (Gesch. inch)"
+                },
+                alerts: {
+                    fillAll: "Bitte füllen Sie alle Felder aus.",
+                    validNumLines: "Bitte geben Sie eine gültige Anzahl an Linien ein (1-100).",
+                    noDrawings: "Noch keine Zeichnungen. Bitte halbieren Sie mindestens eine Linie.",
+                    noData: "Keine Daten für diese Sitzung aufgezeichnet.",
+                    strokeTooLong: "Linie zu lang! Bitte zeichnen Sie eine kürzere Markierung."
+                },
+                confirms: {
+                    reset: "Aktuellen Test neustarten? Der Fortschritt geht verloren.",
+                    finish: "Test vorzeitig beenden und Ergebnisse berechnen?",
+                    main: "Zurück zum Hauptmenü? Daten gehen verloren."
                 }
             }
         };
@@ -223,6 +412,7 @@
 
             document.getElementById("userFormLabel").textContent = t.userFormLabel;
             document.getElementById("submitInfo").textContent = t.submitInfo;
+            document.getElementById("exportPattern").textContent = t.exportPattern;
             document.getElementById("numLines").placeholder = t.placeholders.numLines;
             document.getElementById("name").placeholder = t.placeholders.name;
             document.getElementById("surname").placeholder = t.placeholders.surname;
@@ -235,33 +425,35 @@
         detectLanguage();
         applyLanguage();
 
-        /* ---------------------------
-           ORIGINAL WORKING CODE BELOW
-        --------------------------- */
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
 
         let lineLength = 0, startX = 0, startY = 0, trueMidpointX = 0;
-        let totalDraws = 100, drawCount = 0, errors = [];
+        let totalDraws = 10, drawCount = 0, errors = [], lineHistory = [];
         let userLine = null, drawing = false, stats = {};
 
-        /* CANVAS AUTO-RESIZE with SAFETY */
+        let DPR = 1;
         function resizeCanvas() {
-            // Capture old dimensions
-            const oldW = canvas.width;
-            const oldH = canvas.height;
+            const wrap = document.getElementById('canvasWrap');
+            if (wrap.style.display === 'none') return;
 
-            // Set new dimensions
-            const newW = Math.min(window.innerWidth * 0.95, 1200);
-            const newH = Math.min(window.innerHeight * 0.70, 750);
-            canvas.width = newW;
-            canvas.height = newH;
+            const oldStyleW = parseFloat(canvas.style.width) || wrap.clientWidth;
+            const oldStyleH = parseFloat(canvas.style.height) || Math.round(window.innerHeight * 0.70);
 
-            // Check if test is active AND data exists (lineLength > 0)
-            if (canvas.style.display === "block" && oldW > 0 && oldH > 0 && lineLength > 0) {
-                // Scale everything to preserve relative position
-                const ratioW = newW / oldW;
-                const ratioH = newH / oldH;
+            const newStyleW = wrap.clientWidth;
+            const newStyleH = Math.round(window.innerHeight * 0.70);
+
+            DPR = window.devicePixelRatio || 1;
+            canvas.width = Math.floor(newStyleW * DPR);
+            canvas.height = Math.floor(newStyleH * DPR);
+            canvas.style.width = newStyleW + 'px';
+            canvas.style.height = newStyleH + 'px';
+            ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+            if (lineLength > 0) {
+                // IMPORTANT: Scale coordinates to match new dimensions (Handles device rotation)
+                const ratioW = newStyleW / oldStyleW;
+                const ratioH = newStyleH / oldStyleH;
 
                 startX *= ratioW;
                 lineLength *= ratioW;
@@ -272,85 +464,129 @@
                     userLine.x1 *= ratioW; userLine.x2 *= ratioW;
                     userLine.y1 *= ratioH; userLine.y2 *= ratioH;
                 }
+
+                if (lineHistory.length) {
+                    lineHistory = lineHistory.map(h => ({
+                        ...h,
+                        startX: h.startX * ratioW,
+                        startY: h.startY * ratioH,
+                        lineLength: h.lineLength * ratioW,
+                        trueMidpointX: h.trueMidpointX * ratioW,
+                        markX: h.markX * ratioW,
+                        markY: h.markY * ratioH,
+                        errorPx: h.errorPx * ratioW,
+                        errorCm: (h.errorPx * ratioW) / 37.795,
+                        errorInch: (h.errorPx * ratioW) / 96
+                    }));
+                }
                 drawCanvas();
             } else {
-                // If test is active but NO data yet (first run), or setup phase
-                if (drawCount < totalDraws && document.getElementById("researcherForm").style.display === "none") {
-                    drawLine();
-                }
+                if (drawCount < totalDraws) drawLine();
             }
         }
         window.addEventListener("resize", resizeCanvas);
 
-        /* DRAW RANDOM HORIZONTAL LINE */
         function drawLine() {
             if (testFinished) return;
-            drawCanvas(); // clear logic happens inside
+            const W = canvas.width / DPR;
+            const H = canvas.height / DPR;
 
-            // Recalculate based on current canvas size
-            lineLength = canvas.width / 2;
-            startX = Math.random() * (canvas.width - lineLength);
-            const minY = canvas.height * 0.05;
-            const maxY = canvas.height * 0.95;
+            lineLength = W / 2;
+            startX = Math.random() * (W - lineLength);
+            const minY = H * 0.2;
+            const maxY = H * 0.8;
             startY = minY + Math.random() * (maxY - minY);
             trueMidpointX = startX + lineLength / 2;
             drawCanvas();
         }
 
         function drawCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Only draw if initialized
+            const W = canvas.width / DPR;
+            const H = canvas.height / DPR;
+            ctx.clearRect(0, 0, W, H);
+
             if (lineLength > 0) {
                 ctx.beginPath();
                 ctx.moveTo(startX, startY);
                 ctx.lineTo(startX + lineLength, startY);
-                ctx.lineWidth = 5; ctx.strokeStyle = "black"; ctx.stroke();
+                ctx.lineWidth = 5; ctx.strokeStyle = "#333"; ctx.stroke();
             }
             if (userLine) {
                 ctx.beginPath();
                 ctx.moveTo(userLine.x1, userLine.y1);
                 ctx.lineTo(userLine.x2, userLine.y2);
-                ctx.lineWidth = 3; ctx.strokeStyle = "blue"; ctx.stroke();
+                ctx.lineWidth = 4; ctx.strokeStyle = "#0b74de"; ctx.stroke();
             }
         }
 
         function getCoords(clientX, clientY) {
             const rect = canvas.getBoundingClientRect();
-            return { x: clientX - rect.left, y: clientY - rect.top };
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
         }
 
         function startDraw(x, y) { if (testFinished) return; drawing = true; userLine = { x1: x, y1: y, x2: x, y2: y }; drawCanvas(); }
         function moveDraw(x, y) { if (!drawing || testFinished) return; userLine.x2 = x; userLine.y2 = y; drawCanvas(); }
 
+        function segmentParamT(x1, y1, x2, y2, px, py) {
+            const dx = x2 - x1, dy = y2 - y1;
+            const denom = dx * dx + dy * dy;
+            if (denom < 1e-9) return null;
+            return ((px - x1) * dx + (py - y1) * dy) / denom;
+        }
+
         function getLineIntersection(x1, y1, x2, y2, x3, y3, x4, y4) {
             const denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-            if (denom === 0) return null;
+            if (Math.abs(denom) < 1e-6) return null;
             const px = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / denom;
             const py = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / denom;
+
+            const t = segmentParamT(x1, y1, x2, y2, px, py);
+            if (t === null || t < 0 || t > 1) return null;
             return { x: px, y: py };
         }
-        function isBetween(a, b, c) { return Math.min(a, b) <= c && c <= Math.max(a, b); }
 
         function endDraw() {
             if (!drawing || testFinished) return;
             drawing = false;
             const L = userLine;
+
+            const dist = Math.sqrt((L.x2 - L.x1) ** 2 + (L.y2 - L.y1) ** 2);
+            if (dist > 200) {
+                userLine = null; drawCanvas(); return;
+            }
+
             const I = getLineIntersection(L.x1, L.y1, L.x2, L.y2, startX, startY, startX + lineLength, startY);
             if (!I) { userLine = null; drawCanvas(); return; }
-            const onUser = isBetween(L.x1, L.x2, I.x) && isBetween(L.y1, L.y2, I.y);
-            const onTestLine = isBetween(startX, startX + lineLength, I.x);
-            if (!onUser || !onTestLine) { userLine = null; drawCanvas(); return; }
+
+            const onTestLine = I.x >= startX && I.x <= startX + lineLength && Math.abs(I.y - startY) < 1.5;
+            if (!onTestLine) { userLine = null; drawCanvas(); return; }
 
             const error = I.x - trueMidpointX;
             const percentageError = (error / (lineLength / 2)) * 100;
             const clamped = Math.max(-100, Math.min(100, percentageError));
-            errors.push(clamped);
 
-            const sign = clamped >= 0 ? "+" : "-";
+            errors.push(clamped);
+            const errorCm = error / 37.795;
+            const errorInch = error / 96;
+
+            lineHistory.push({
+                index: drawCount + 1,
+                startX, startY, lineLength, trueMidpointX,
+                markX: I.x, markY: I.y,
+                errorPct: clamped,
+                errorPx: error,
+                errorCm, errorInch
+            });
+
             const errorsDiv = document.getElementById("errors");
             const lineMsg = document.createElement("p");
-            lineMsg.textContent = `Draw ${drawCount + 1}: ${sign}${Math.abs(clamped).toFixed(2)}%`;
+            const sign = clamped >= 0 ? "+" : "-";
+            lineMsg.textContent = `${LANG === 'tr' ? 'Çizim' : (LANG === 'de' ? 'Zeichnung' : 'Draw')} ${drawCount + 1}: ${sign}${Math.abs(clamped).toFixed(2)}% (${error.toFixed(1)}px / ${Math.abs(errorCm).toFixed(2)}cm)`;
             errorsDiv.appendChild(lineMsg);
+            errorsDiv.scrollTop = errorsDiv.scrollHeight;
 
             drawCount++; userLine = null;
 
@@ -359,16 +595,17 @@
                 calculateStats();
                 document.getElementById("userForm").style.display = "block";
                 document.getElementById("finalStats").style.display = "block";
-                // Keep controls visible for Reset/Main Menu
-                // document.getElementById("testControls").style.display = "none";
                 return;
             }
-
             drawLine();
         }
 
-        /* STATISTICS */
         function calculateStats() {
+            if (!errors.length) {
+                document.getElementById("finalStats").innerHTML = translations[LANG].alerts.noData;
+                stats = {};
+                return;
+            }
             const negErrors = errors.filter(e => e < 0);
             const posErrors = errors.filter(e => e > 0);
             const negCount = negErrors.length; const posCount = posErrors.length;
@@ -376,139 +613,225 @@
             const signedAverage = errors.reduce((a, b) => a + b, 0) / errors.length;
             const meanNeg = negCount ? negErrors.reduce((a, b) => a + b, 0) / negCount : 0;
             const meanPos = posCount ? posErrors.reduce((a, b) => a + b, 0) / posCount : 0;
-            const closestMark = Math.min(...errors.map(e => Math.abs(e)));
-            const biggestMiss = errors.reduce((p, c) => Math.abs(c) > Math.abs(p) ? c : p, 0);
+
+            const absErrors = errors.map(e => ({ val: e, abs: Math.abs(e) }));
+            absErrors.sort((a, b) => a.abs - b.abs);
+            const closestMark = absErrors[0].val;
+            const biggestMiss = absErrors[absErrors.length - 1].val;
+
             const stdDev = Math.sqrt(errors.map(e => (e - signedAverage) ** 2).reduce((a, b) => a + b, 0) / errors.length);
 
-            stats = { signedAverage, meanAbsError, meanNeg, meanPos, negCount, posCount, closestMark, biggestMiss, stdDev };
+            const allPx = lineHistory.map(h => h.errorPx);
+            const negPxArr = allPx.filter(p => p < 0);
+            const posPxArr = allPx.filter(p => p > 0);
 
+            const biasPx = allPx.reduce((a, b) => a + b, 0) / allPx.length;
+            const absAvgPx = allPx.map(p => Math.abs(p)).reduce((a, b) => a + b, 0) / allPx.length;
+            const avgNegPx = negPxArr.length ? negPxArr.reduce((a, b) => a + b, 0) / negPxArr.length : 0;
+            const avgPosPx = posPxArr.length ? posPxArr.reduce((a, b) => a + b, 0) / posPxArr.length : 0;
+
+            const absAvgCm = absAvgPx / 37.795;
+            const absAvgInch = absAvgPx / 96;
+
+            stats = { signedAverage, meanAbsError, meanNeg, meanPos, negCount, posCount, closestMark, biggestMiss, stdDev, biasPx, absAvgPx, avgNegPx, avgPosPx, absAvgCm, absAvgInch };
             const labels = translations[LANG].statsLabels;
-
             document.getElementById("finalStats").innerHTML = `
-        ${labels.totalDraws}: ${totalDraws}<br>
-        ${labels.negErrors}: ${negCount}<br>
-        ${labels.posErrors}: ${posCount}<br><br>
-        ${labels.directionalBias}: ${signedAverage.toFixed(2)}%<br>
-        ${labels.overallAccuracy}: ${meanAbsError.toFixed(2)}%<br>
-        ${labels.stdDev}: ${stdDev.toFixed(2)}%<br><br>
-        ${labels.avgNeg}: ${meanNeg.toFixed(2)}%<br>
-        ${labels.avgPos}: ${meanPos.toFixed(2)}%<br>
-        ${labels.closest}: ${closestMark.toFixed(2)}%<br>
-        ${labels.biggest}: ${biggestMiss.toFixed(2)}%
-    `;
+                <strong>${labels.totalDraws}: ${errors.length}</strong><br>
+                ${labels.negErrors}: ${negCount}<br>
+                ${labels.posErrors}: ${posCount}<br><hr>
+                ${labels.directionalBias}: ${signedAverage.toFixed(2)}%<br>
+                ${labels.overallAccuracy}: ${meanAbsError.toFixed(2)}%<br>
+                ${labels.stdDev}: ${stdDev.toFixed(2)}%<br><hr>
+                ${labels.biasPixels}: ${biasPx.toFixed(1)}px<br>
+                ${labels.avgPixels}: ${absAvgPx.toFixed(1)}px<br>
+                ${labels.avgCm}: ${absAvgCm.toFixed(2)}cm<br>
+                ${labels.avgInch}: ${absAvgInch.toFixed(2)}in<br><hr>
+                ${labels.negPx}: ${avgNegPx.toFixed(1)}px<br>
+                ${labels.posPx}: ${avgPosPx.toFixed(1)}px<br><hr>
+                ${labels.avgNeg}: ${meanNeg.toFixed(2)}%<br>
+                ${labels.avgPos}: ${meanPos.toFixed(2)}%<br>
+                ${labels.closest}: ${closestMark.toFixed(2)}%<br>
+                ${labels.biggest}: ${biggestMiss.toFixed(2)}%
+            `;
         }
 
-        /* TOUCH EVENTS */
-        canvas.addEventListener("touchstart", e => { e.preventDefault(); const p = getCoords(e.touches[0].clientX, e.touches[0].clientY); startDraw(p.x, p.y); });
-        canvas.addEventListener("touchmove", e => { e.preventDefault(); const p = getCoords(e.touches[0].clientX, e.touches[0].clientY); moveDraw(p.x, p.y); });
-        canvas.addEventListener("touchend", e => { e.preventDefault(); endDraw(); });
+        canvas.addEventListener("pointerdown", e => { e.preventDefault(); const p = getCoords(e.clientX, e.clientY); startDraw(p.x, p.y); });
+        canvas.addEventListener("pointermove", e => { e.preventDefault(); const p = getCoords(e.clientX, e.clientY); moveDraw(p.x, p.y); });
+        canvas.addEventListener("pointerup", e => { e.preventDefault(); endDraw(); });
+        canvas.addEventListener("pointercancel", () => { drawing = false; userLine = null; drawCanvas(); });
 
-        /* MOUSE EVENTS */
-        canvas.addEventListener("mousedown", e => startDraw(e.offsetX, e.offsetY));
-        canvas.addEventListener("mousemove", e => moveDraw(e.offsetX, e.offsetY));
-        canvas.addEventListener("mouseup", e => endDraw());
+        function safeFilePart(s) {
+            return (s || "").replace(/[^\w\-]+/g, '_').replace(/_+/g, '_').slice(0, 40);
+        }
 
-        /* CSV EXPORT */
         document.getElementById("submitInfo").addEventListener("click", () => {
             const name = document.getElementById("name").value.trim();
             const surname = document.getElementById("surname").value.trim();
             const age = document.getElementById("age").value.trim();
-            if (!name || !surname || !age) { alert("Please fill all fields."); return; }
+            if (!name || !surname || !age) { alert(translations[LANG].alerts.fillAll); return; }
 
             const uniqueCode = Math.floor(Math.random() * 1e8).toString().padStart(8, '0');
             const t = translations[LANG].csvHeaders;
             let csvContent = "\uFEFF";
-            csvContent += `${t[0]},${name}\n${t[1]},${surname}\n${t[2]},${age}\n\n`;
-            csvContent += `${t[3]},${stats.signedAverage.toFixed(2)}%\n`;
-            csvContent += `${t[4]},${stats.meanAbsError.toFixed(2)}%\n`;
-            csvContent += `${t[5]},${stats.stdDev.toFixed(2)}%\n`;
-            csvContent += `${t[6]},${stats.negCount}\n`;
-            csvContent += `${t[7]},${stats.posCount}\n`;
-            csvContent += `${t[8]},${stats.meanNeg.toFixed(2)}%\n`;
-            csvContent += `${t[9]},${stats.meanPos.toFixed(2)}%\n`;
-            csvContent += `${t[10]},${stats.closestMark.toFixed(2)}%\n`;
-            csvContent += `${t[11]},${stats.biggestMiss.toFixed(2)}%\n\n`;
-            csvContent += `${t[12]}\n`;
-            errors.forEach((e, i) => csvContent += `${i + 1},${e.toFixed(2)}\n`);
+
+            csvContent += `"${t[0]}"\n`;
+            csvContent += `"${t[1]}",${name}\n"${t[2]}",${surname}\n"${t[3]}",${age}\n`;
+            csvContent += `"${t[4]}",${errors.length}\n`;
+            csvContent += `"${t[5]}",${stats.negCount}\n`;
+            csvContent += `"${t[6]}",${stats.posCount}\n\n`;
+            csvContent += `"${t[7]}",${stats.signedAverage.toFixed(2)}\n`;
+            csvContent += `"${t[8]}",${stats.meanAbsError.toFixed(2)}\n`;
+            csvContent += `"${t[9]}",${stats.stdDev.toFixed(2)}\n\n`;
+            csvContent += `"${t[10]}",${stats.meanNeg.toFixed(2)}\n`;
+            csvContent += `"${t[11]}",${stats.meanPos.toFixed(2)}\n`;
+            csvContent += `"${t[12]}",${stats.closestMark.toFixed(2)}\n`;
+            csvContent += `"${t[13]}",${stats.biggestMiss.toFixed(2)}\n\n`;
+
+            csvContent += `"${t[14]}"\n`;
+            csvContent += `"${t[15]}",${stats.biasPx.toFixed(1)}\n`;
+            csvContent += `"${t[16]}",${stats.absAvgPx.toFixed(1)}\n`;
+            csvContent += `"${t[17]}",${stats.absAvgCm.toFixed(2)}\n`;
+            csvContent += `"${t[18]}",${stats.absAvgInch.toFixed(2)}\n\n`;
+
+            csvContent += `"${t[19]}"\n"${t[20]}"\nIndex,pct,px,cm,inch\n`;
+            lineHistory.forEach((h) => csvContent += `${h.index},${h.errorPct.toFixed(2)},${h.errorPx.toFixed(1)},${h.errorCm.toFixed(2)},${h.errorInch.toFixed(2)}\n`);
 
             const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
             const link = document.createElement("a");
-            const fileName = `${uniqueCode}_${surname}_${age}.csv`;
+            const fileName = `${uniqueCode}_${safeFilePart(name)}_${safeFilePart(surname)}_${age}.csv`;
             link.setAttribute("href", URL.createObjectURL(blob));
             link.setAttribute("download", fileName);
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
         });
 
-        /* START TEST */
+        document.getElementById("exportPattern").addEventListener("click", () => {
+            if (!lineHistory.length) { alert(translations[LANG].alerts.noData); return; }
+
+            const exportCanvas = document.createElement("canvas");
+            const exCtx = exportCanvas.getContext("2d");
+            const exportDPR = 2; // High quality
+
+            const margin = 50;
+            const lineSpacing = 70;
+            const maxLineLen = Math.max(...lineHistory.map(h => h.lineLength));
+            const maxW = maxLineLen + 200;
+
+            exportCanvas.width = (maxW) * exportDPR;
+            exportCanvas.height = (lineHistory.length * lineSpacing + margin * 2) * exportDPR;
+
+            exCtx.scale(exportDPR, exportDPR);
+            exCtx.fillStyle = "white";
+            exCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+            lineHistory.forEach((h, i) => {
+                const y = margin + i * lineSpacing;
+                exCtx.fillStyle = "#666";
+                exCtx.font = "bold 14px Arial";
+                exCtx.fillText(`L${h.index}`, 10, y + 5);
+
+                const centerX = (maxW / 2);
+                const drawStartX = centerX - (h.lineLength / 2);
+                const drawMidX = drawStartX + (h.lineLength / 2);
+                const drawMarkX = drawMidX + (h.markX - h.trueMidpointX);
+
+                exCtx.beginPath();
+                exCtx.moveTo(drawStartX, y);
+                exCtx.lineTo(drawStartX + h.lineLength, y);
+                exCtx.lineWidth = 3;
+                exCtx.strokeStyle = "black";
+                exCtx.stroke();
+
+                exCtx.beginPath();
+                exCtx.arc(drawMidX, y, 3, 0, Math.PI * 2);
+                exCtx.fillStyle = "red";
+                exCtx.fill();
+
+                exCtx.beginPath();
+                exCtx.moveTo(drawMarkX, y - 12);
+                exCtx.lineTo(drawMarkX, y + 12);
+                exCtx.lineWidth = 2;
+                exCtx.strokeStyle = "#0b74de";
+                exCtx.stroke();
+
+                exCtx.fillStyle = "#333";
+                exCtx.font = "bold 11px monospace";
+                const sign = h.errorPct > 0 ? "+" : "";
+                exCtx.fillText(`${sign}${h.errorPct.toFixed(2)}% (${Math.abs(h.errorCm).toFixed(2)}cm)`, drawStartX + h.lineLength + 15, y + 4);
+            });
+
+            const name = document.getElementById("name").value.trim() || "Participant";
+            const surname = document.getElementById("surname").value.trim() || "";
+            const age = document.getElementById("age").value.trim() || "0";
+            const uniqueCode = Math.floor(Math.random() * 1e8).toString().padStart(8, '0');
+
+            const link = document.createElement("a");
+            link.download = `Pattern_${uniqueCode}_${safeFilePart(name)}_${safeFilePart(surname)}_${age}.png`;
+            link.href = exportCanvas.toDataURL("image/png");
+            link.click();
+        });
+
         document.getElementById("startTest").addEventListener("click", () => {
             const n = parseInt(document.getElementById("numLines").value);
-            if (!n || n <= 0) { alert("Please enter a valid number of lines."); return; }
+            if (!n || n <= 0 || n > 100) { alert(translations[LANG].alerts.validNumLines); return; }
             totalDraws = n;
             drawCount = 0;
             errors = [];
+            lineHistory = [];
             testFinished = false;
 
-            // UI Updates
-            document.getElementById("title").style.display = "none"; // Hide title
+            document.getElementById("title").style.display = "none";
             document.getElementById("researcherForm").style.display = "none";
-            document.getElementById("testControls").style.display = "block";
-            canvas.style.display = "block";
+            document.getElementById("testControls").style.display = "flex";
+            document.getElementById("canvasWrap").style.display = "block";
             document.getElementById("errors").style.display = "block";
             document.getElementById("errors").innerHTML = "";
             document.getElementById("finalStats").style.display = "none";
             document.getElementById("userForm").style.display = "none";
 
-            // Move controls to top by inserting before canvas if needed, or CSS positioning. 
-            // The current CSS structure has controls above canvas (in DOM order).
-            // But we want to ensure it's at the very top.
-            const controls = document.getElementById("testControls");
-            document.body.insertBefore(controls, document.body.firstChild);
-
             resizeCanvas();
         });
 
-        /* 1. RESET (Same settings, fresh start) */
         document.getElementById("btnReset").addEventListener("click", () => {
-            if (!confirm("Restart current test?")) return;
+            if (!confirm(translations[LANG].confirms.reset)) return;
             drawCount = 0;
             errors = [];
+            lineHistory = [];
             testFinished = false;
+            userLine = null;
+            lineLength = 0;
+            drawing = false;
             document.getElementById("errors").innerHTML = "";
             document.getElementById("finalStats").style.display = "none";
             document.getElementById("userForm").style.display = "none";
-            resizeCanvas(); // Will trigger drawLine since count < total
+            drawLine();
         });
 
-        /* 2. FINISH (End early, show results) */
         document.getElementById("btnFinish").addEventListener("click", () => {
             if (testFinished) return;
-            if (!confirm("Finish test early and calculate results?")) return;
+            if (!errors.length) { alert(translations[LANG].alerts.noDrawings); return; }
+            if (!confirm(translations[LANG].confirms.finish)) return;
             testFinished = true;
-            // If we finish early, totalDraws becomes current drawCount for stats purposes?
-            // Or we just calculate stats based on what we have. 
-            // Logic: adjust totalDraws to avoid 'missing' data in stats or just run stats on existing errors.
-            // calculateStats() uses 'errors.length'.
-            totalDraws = drawCount; // Update total to match what was actually done
+            totalDraws = drawCount;
             calculateStats();
             document.getElementById("userForm").style.display = "block";
             document.getElementById("finalStats").style.display = "block";
-            // User requested these buttons. If finished, maybe show Main Menu?
-            // Let's keep controls visible but maybe disable Finish/Reset?
-            // Actually standard is to show results form.
-            document.getElementById("title").style.display = "block"; // Show title again
+            document.getElementById("title").style.display = "block";
         });
 
-        /* 3. MAIN MENU (Back to setup) */
         document.getElementById("btnMain").addEventListener("click", () => {
-            if (!confirm("Return to Main Menu? Data will be lost.")) return;
+            if (!confirm(translations[LANG].confirms.main)) return;
             testFinished = false;
             drawCount = 0;
             errors = [];
+            lineHistory = [];
+            userLine = null;
+            lineLength = 0;
+            drawing = false;
 
             document.getElementById("title").style.display = "block";
             document.getElementById("researcherForm").style.display = "block";
             document.getElementById("testControls").style.display = "none";
-            canvas.style.display = "none";
+            document.getElementById("canvasWrap").style.display = "none";
             document.getElementById("errors").style.display = "none";
             document.getElementById("finalStats").style.display = "none";
             document.getElementById("userForm").style.display = "none";
@@ -517,6 +840,3 @@
 </body>
 
 </html>
-
-
-
