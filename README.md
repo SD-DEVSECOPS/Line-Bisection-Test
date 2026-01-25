@@ -4,8 +4,8 @@ This repository contains the **Computerized Line Bisection Test (cLBT)** — a h
 
 <div align="center">
 
-## 🚀 [CLICK HERE TO START TEST](https://sd-devsecops.github.io/Line-Bisection-Test/cblt)
-**https://sd-devsecops.github.io/Line-Bisection-Test/cblt**
+## 🚀 [CLICK HERE TO START TEST](https://sd-devsecops.github.io/Line-Bisection-Test/line-bisection-test.html)
+**https://sd-devsecops.github.io/Line-Bisection-Test/line-bisection-test.html**
 
 </div>
 
