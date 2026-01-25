@@ -197,6 +197,25 @@
             user-select: auto;
         }
 
+        /* Calibration Box */
+        #calibrationBox {
+            margin: 15px auto;
+            padding: 15px;
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 8px;
+            font-size: 13px;
+            max-width: 400px;
+            text-align: left;
+            color: #856404;
+        }
+
+        #calibrationBox input {
+            width: 60px;
+            padding: 4px;
+            margin-left: 5px;
+        }
+
         #startTest,
         #submitInfo {
             padding: 12px 30px;
@@ -230,7 +249,16 @@
     <div id="researcherForm">
         <p id="numLinesLabel"><b>Enter number of lines for this test:</b></p>
         <input type="number" id="numLines" placeholder="Number of lines" min="1" max="100" value="10" required>
-        <br>
+
+        <div id="calibrationBox">
+            <strong id="calibTitle">Hardware Calibration (Physical Accuracy)</strong><br>
+            <span id="detectedHardware">Detected: Default (96 DPI)</span><br>
+            <label for="ppiInput">Calibration PPI:</label>
+            <input type="number" id="ppiInput" value="96" step="0.1">
+            <br>
+            <small id="calibHint">Tip: If measurements (cm) are off, adjust this value.</small>
+        </div>
+
         <button id="startTest">Start Test</button>
     </div>
 
@@ -291,6 +319,12 @@
                     negPx: "Avg Negative Pixels", posPx: "Avg Positive Pixels",
                     avgCm: "Avg Error (Est. cm)", avgInch: "Avg Error (Est. inch)"
                 },
+                calibration: {
+                    title: "Hardware Calibration (Physical Accuracy)",
+                    detected: "Detected Device: ",
+                    hint: "Adjust PPI if the physical measurement (cm) on screen is incorrect.",
+                    defaults: { desktop: "Desktop / Standard", ipad12: "iPad Pro 12.9\"", ipad11: "iPad Pro 11\" / Air", mini: "iPad Mini", generic: "Generic/Unknown" }
+                },
                 alerts: {
                     fillAll: "Please fill all fields.",
                     validNumLines: "Please enter a valid number of lines (1-100).",
@@ -336,6 +370,12 @@
                     avgPixels: "Ort. Hata (Piksel)", biasPixels: "Yönsel Sapma (Piksel)",
                     negPx: "Ort. Negatif Piksel", posPx: "Ort. Pozitif Piksel",
                     avgCm: "Ort. Hata (Tahmini cm)", avgInch: "Ort. Hata (Tahmini inch)"
+                },
+                calibration: {
+                    title: "Donanım Kalibrasyonu (Fiziksel Doğruluk)",
+                    detected: "Algılanan Cihaz: ",
+                    hint: "Ekrandaki cm ölçümü hatalıysa PPI değerini güncelleyin.",
+                    defaults: { desktop: "Masaüstü / Standart", ipad12: "iPad Pro 12.9\"", ipad11: "iPad Pro 11\" / Air", mini: "iPad Mini", generic: "Bilinmeyen" }
                 },
                 alerts: {
                     fillAll: "Lütfen tüm alanları doldurun.",
@@ -383,6 +423,12 @@
                     negPx: "Durchschn. Negative Pixel", posPx: "Durchschn. Positive Pixel",
                     avgCm: "Durchschn. Fehler (Gesch. cm)", avgInch: "Durchschn. Fehler (Gesch. inch)"
                 },
+                calibration: {
+                    title: "Hardware-Kalibrierung (Physische Genauigkeit)",
+                    detected: "Erkanntes Gerät: ",
+                    hint: "Passen Sie den PPI an, wenn die cm-Messung auf dem Bildschirm falsch ist.",
+                    defaults: { desktop: "Desktop / Standard", ipad12: "iPad Pro 12.9\"", ipad11: "iPad Pro 11\" / Air", mini: "iPad Mini", generic: "Unbekannt" }
+                },
                 alerts: {
                     fillAll: "Bitte füllen Sie alle Felder aus.",
                     validNumLines: "Bitte geben Sie eine gültige Anzahl an Linien ein (1-100).",
@@ -425,13 +471,18 @@
             document.getElementById("name").placeholder = t.placeholders.name;
             document.getElementById("surname").placeholder = t.placeholders.surname;
             document.getElementById("age").placeholder = t.placeholders.age;
+
+            // Update Calibration UI
+            document.getElementById("calibTitle").textContent = t.calibration.title;
+            document.getElementById("calibHint").textContent = t.calibration.hint;
+            updateHardwareDisplay();
+
             if (testFinished) calculateStats();
         }
 
         function setLanguage(l) { LANG = l; applyLanguage(); }
 
         detectLanguage();
-        applyLanguage();
 
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
@@ -439,6 +490,41 @@
         let lineLength = 0, startX = 0, startY = 0, trueMidpointX = 0;
         let totalDraws = 10, drawCount = 0, errors = [], lineHistory = [];
         let userLine = null, drawing = false, stats = {};
+        let currentPPI = 96;
+
+        function updateHardwareDisplay() {
+            const t = translations[LANG].calibration;
+            const res = autoDetectPPI();
+            document.getElementById("detectedHardware").textContent = t.detected + res.name;
+            if (!document.getElementById("ppiInput")._manuallyEdited) {
+                document.getElementById("ppiInput").value = res.ppi;
+                currentPPI = res.ppi;
+            }
+        }
+
+        function autoDetectPPI() {
+            const sw = window.screen.width, sh = window.screen.height;
+            const maxS = Math.max(sw, sh), minS = Math.min(sw, sh);
+            const isApple = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent) && 'ontouchend' in document;
+            const names = translations[LANG].calibration.defaults;
+
+            // Common iOS Devices Logical PPI mapping
+            if (isApple) {
+                if (maxS === 1366 && minS === 1024) return { name: names.ipad12, ppi: 123.7 };
+                if (maxS === 1194 || maxS === 1180 || maxS === 1112) return { name: names.ipad11, ppi: 122.5 };
+                if (maxS === 1133 || maxS === 1024) return { name: names.mini, ppi: 163 }; // Mini 6 is 1133
+                return { name: "Apple Generic", ppi: 121 };
+            }
+            if (!('ontouchend' in document)) return { name: names.desktop, ppi: 96 };
+            return { name: names.generic, ppi: 96 };
+        }
+
+        document.getElementById("ppiInput").addEventListener("input", (e) => {
+            currentPPI = parseFloat(e.target.value) || 96;
+            e.target._manuallyEdited = true;
+        });
+
+        applyLanguage();
 
         // DRIFT PROTECTION: Explicitly track the last logical width/height to calculate ratios accurately
         let lastW = 0, lastH = 0;
@@ -476,6 +562,7 @@
                 }
 
                 if (lineHistory.length) {
+                    const pxToCm = 2.54 / currentPPI;
                     lineHistory = lineHistory.map(h => ({
                         ...h,
                         startX: h.startX * ratioW,
@@ -485,8 +572,8 @@
                         markX: h.markX * ratioW,
                         markY: h.markY * ratioH,
                         errorPx: h.errorPx * ratioW,
-                        errorCm: (h.errorPx * ratioW) / 37.795,
-                        errorInch: (h.errorPx * ratioW) / 96
+                        errorCm: (h.errorPx * ratioW) * pxToCm,
+                        errorInch: (h.errorPx * ratioW) / currentPPI
                     }));
                 }
             }
@@ -590,8 +677,8 @@
             const clamped = Math.max(-100, Math.min(100, percentageError));
 
             errors.push(clamped);
-            const errorCm = error / 37.795;
-            const errorInch = error / 96;
+            const errorCm = error * (2.54 / currentPPI);
+            const errorInch = error / currentPPI;
 
             lineHistory.push({
                 index: drawCount + 1,
@@ -651,8 +738,8 @@
             const avgNegPx = negPxArr.length ? negPxArr.reduce((a, b) => a + b, 0) / negPxArr.length : 0;
             const avgPosPx = posPxArr.length ? posPxArr.reduce((a, b) => a + b, 0) / posPxArr.length : 0;
 
-            const absAvgCm = absAvgPx / 37.795;
-            const absAvgInch = absAvgPx / 96;
+            const absAvgCm = absAvgPx * (2.54 / currentPPI);
+            const absAvgInch = absAvgPx / currentPPI;
 
             stats = { signedAverage, meanAbsError, meanNeg, meanPos, negCount, posCount, closestMark, biggestMiss, stdDev, biasPx, absAvgPx, avgNegPx, avgPosPx, absAvgCm, absAvgInch };
             const labels = translations[LANG].statsLabels;
@@ -789,7 +876,8 @@
                 exCtx.fillStyle = "#333";
                 exCtx.font = "bold 11px monospace";
                 const sign = h.errorPct > 0 ? "+" : "";
-                exCtx.fillText(`${sign}${h.errorPct.toFixed(2)}% (${Math.abs(h.errorCm).toFixed(2)}cm)`, drawStartX + h.lineLength + 15, y + 4);
+                const pxToCm = 2.54 / currentPPI;
+                exCtx.fillText(`${sign}${h.errorPct.toFixed(2)}% (${Math.abs(h.errorPx * pxToCm).toFixed(2)}cm)`, drawStartX + h.lineLength + 15, y + 4);
             });
 
             const uniqueCode = Math.floor(Math.random() * 1e8).toString().padStart(8, '0');
