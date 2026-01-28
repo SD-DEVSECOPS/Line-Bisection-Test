@@ -102,18 +102,87 @@ Before a clinical session:
 
 ## � Device Reference Table (Comparative)
 
-The following table shows how the same **600px (or 50%)** stimulus scales across different hardware using cLBT's calibration engine.
+## How to Calculate Pixel Length (px) and PPI
 
-| Device Model | Logical Width | Calibrated PPI | Line Length | Physical Length (cm) |
-| :--- | :--- | :--- | :--- | :--- |
-| **iPad Pro 12.9"** | 1366 px | 123.7 | 600 px | **12.32 cm** |
-| **iPad Pro 11" / Air** | 1194 px | 122.5 | 597 px | **12.38 cm** |
-| **iPad Mini (8.3")** | 1133 px | 163.0 | 566 px | **8.82 cm** |
-| **Surface Pro 9** | 1440 px | 120.0 | 600 px | **12.70 cm** |
-| **MacBook Air 13"** | 1280 px | 113.0 | 600 px | **13.48 cm** |
-| **Std. 24" Monitor** | 1920 px | 96.0 | 600 px | **15.88 cm** |
+This explains how to calculate the **exact pixel length** of the stimulus line and then compute **PPI**, using only what is shown on the screen and basic math.
 
-> **Note**: Values marked in **bold** are calibrated for the iPad Pro 12.9" form factor. Desktop values follow the W3C standard (96 DPI). Smaller devices use 50% width instead of the 600px cap.
+1. Start the test.
+2. Go to one end of the line (left or right).
+3. Draw a short vertical stroke as close to the edge as possible.
+4. Release the stroke.
+5. Read the value shown at the bottom of the screen as percent (%) and pixels (px).
+
+Example screen output:
+99.65% 299 px
+
+In this test:
+100% equals half of the line.
+The shown px value is the distance from the center of the line to your mark.
+
+The definition used by the test is:
+Error% = (Distance_from_center_px / Half_Line_px) × 100
+
+You are given:
+99.65% = 299 px
+
+First, calculate what 100% equals:
+100% = 299 × (100 / 99.65)
+100% = 300 px
+
+This value is the half-line length.
+
+Now calculate the full line length:
+Full line = 2 × 300 px
+Full line = 600 px
+
+Result:
+The stimulus line length is exactly 600 px.
+Only one edge measurement is required.
+
+---
+
+## Reference: Typical Stimulus Pixel Lengths (px)
+
+This table shows **typical pixel lengths** produced by the test on common devices.
+These values come from the test’s layout rules (600 px cap or 50% width).
+
+| Device Model            | Logical Width | Stimulus Length |
+|-------------------------|---------------|-----------------|
+| iPad Pro 12.9"          | 1366 px       | 600 px          |
+| iPad Pro 11" / Air      | 1194 px       | 597 px          |
+| iPad Mini (8.3")        | 1133 px       | 566 px          |
+| Surface Pro 9           | 1440 px       | 600 px          |
+| MacBook Air 13"         | 1280 px       | 600 px          |
+| Std. 24" Monitor        | 1920 px       | 600 px          |
+
+Important:
+This table is **reference only**.
+Always verify the pixel length manually using the method above, because browser layout,
+OS scaling, and viewport size can change the effective stimulus width.
+
+---
+
+## How to Calculate PPI Using px and Real Measurement
+
+After you know the line length in pixels:
+
+1. Measure the real physical length of the line on the screen with a ruler (cm).
+2. Use the formula below.
+
+Formula:
+PPI = (Line_Length_px × 2.54) / Measured_Length_cm
+
+Example:
+Line length = 600 px
+Measured length = 11.5 cm
+
+PPI = (600 × 2.54) / 11.5
+PPI = 132.5
+
+Result:
+Effective PPI = 132.5
+Enter this value into the calibration field.
+
 
 ---
 
