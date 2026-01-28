@@ -913,7 +913,7 @@
             const margin = 50;
             const lineSpacing = 70;
             const maxLineLen = Math.max(...lineHistory.map(h => h.lineLength));
-            const maxW = maxLineLen + 200;
+            const maxW = maxLineLen + 350;
 
             exportCanvas.width = (maxW) * exportDPR;
             exportCanvas.height = (lineHistory.length * lineSpacing + margin * 2) * exportDPR;
