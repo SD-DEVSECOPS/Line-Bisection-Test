@@ -61,128 +61,61 @@ The stimulus line length is defined in **logical (CSS) pixels**:
 
 ---
 
-## 📐 Why 600px ≠ 16cm on iPad (Important)
+## 📐 Physical Units and Calibration (cm / inch)
 
-A common misconception is assuming the generic browser standard:  
-`1 inch = 96 CSS pixels`
+### Why cm/in can be wrong without calibration
 
-On high-density "Retina" displays, this assumption is physically incorrect.
+Browsers do not expose the true physical size of a CSS pixel. Because of this, cm/in values are only valid after calibration.
 
-**Example: iPad Pro 12.9"**
-- Physical width ≈ **28.16 cm**
-- Logical width = **1366 CSS px**
-- **Actual Reality**: 1366px / 28.16cm ≈ **48.5 px/cm** (or ~123.7 PPI)
-
-**Real conversion logic used in cLBT**:  
-`600px × (2.54 / 123.7) ≈ 12.3 cm`  
-*(The common mistake of using 96 DPI would report ~15.9 cm for the same 600px).*
-
----
-
-## ⚖️ Hardware Calibration (Correct Solution)
-
-Because browsers do not expose physical dimensions, cLBT uses a **Device-Aware Calibration Model**.
-
-### Auto-Detection (Best-Effort)
-The system identifies the device class and applies known PPI values:
-- **iPad Pro 12.9"** → ~123.7 PPI
-- **iPad Pro 11" / iPad Air** → ~122.5 PPI
-- **iPad Mini** → ~163 PPI
-- **Desktop** → 96 PPI (Standard W3C)
-
-### Manual Calibration (Recommended)
-Before a clinical session:
-1. Hold a **physical ruler** to the stimulus line on the screen.
-2. Adjust the **Calibration PPI** value in the Hardware Calibration box until the reported **cm** matches your ruler.
-3. Calibration is applied per session.
-
-**Tip**: Real PPI ≈ `Logical Pixels / Physical Inches`.
-
----
-
-## � Device Reference Table (Comparative)
-
-## How to Calculate Pixel Length (px) and PPI
-
-This explains how to calculate the **exact pixel length** of the stimulus line and then compute **PPI**, using only what is shown on the screen and basic math.
+### How to calculate stimulus pixel length (px) from one edge mark
 
 1. Start the test.
-2. Go to one end of the line (left or right).
+2. Go to one end of the stimulus line (left or right).
 3. Draw a short vertical stroke as close to the edge as possible.
-4. Release the stroke.
-5. Read the value shown at the bottom of the screen as percent (%) and pixels (px).
-
-Example screen output:
-99.65% 299 px
-
-In this test:
-100% equals half of the line.
-The shown px value is the distance from the center of the line to your mark.
-
-The definition used by the test is:
-Error% = (Distance_from_center_px / Half_Line_px) × 100
-
-You are given:
-99.65% = 299 px
-
-First, calculate what 100% equals:
-100% = 299 × (100 / 99.65)
-100% = 300 px
-
-This value is the half-line length.
-
-Now calculate the full line length:
-Full line = 2 × 300 px
-Full line = 600 px
-
-Result:
-The stimulus line length is exactly 600 px.
-Only one edge measurement is required.
-
----
-
-## Reference: Typical Stimulus Pixel Lengths (px)
-
-This table shows **typical pixel lengths** produced by the test on common devices.
-These values come from the test’s layout rules (600 px cap or 50% width).
-
-| Device Model            | Logical Width | Stimulus Length |
-|-------------------------|---------------|-----------------|
-| iPad Pro 12.9"          | 1366 px       | 600 px          |
-| iPad Pro 11" / Air      | 1194 px       | 597 px          |
-| iPad Mini (8.3")        | 1133 px       | 566 px          |
-| Surface Pro 9           | 1440 px       | 600 px          |
-| MacBook Air 13"         | 1280 px       | 600 px          |
-| Std. 24" Monitor        | 1920 px       | 600 px          |
-
-Important:
-This table is **reference only**.
-Always verify the pixel length manually using the method above, because browser layout,
-OS scaling, and viewport size can change the effective stimulus width.
-
----
-
-## How to Calculate PPI Using px and Real Measurement
-
-After you know the line length in pixels:
-
-1. Measure the real physical length of the line on the screen with a ruler (cm).
-2. Use the formula below.
-
-Formula:
-PPI = (Line_Length_px × 2.54) / Measured_Length_cm
+4. Read the bottom log value as **percent (%)** and **pixels (px)**.
 
 Example:
-Line length = 600 px
-Measured length = 11.5 cm
+`99.65% 299 px`
 
-PPI = (600 × 2.54) / 11.5
-PPI = 132.5
+The test uses:
+`Error% = (Δpx / (LineLength / 2)) × 100`
 
-Result:
-Effective PPI = 132.5
-Enter this value into the calibration field.
+Solve for half-line:
+`HalfLinePx = (Δpx × 100) / Error%`
 
+Using the example:
+`HalfLinePx = (299 × 100) / 99.65 = 300 px`
+
+Full line:
+`LineLengthPx = 2 × HalfLinePx = 600 px`
+
+### Reference: Typical stimulus pixel lengths (px)
+
+These are typical outputs from the test’s sizing rule (600px cap or 50% width). Always verify manually, because viewport size can change.
+
+| Device Model         | Logical Width | Typical Stimulus Length |
+|----------------------|--------------|--------------------------|
+| iPad Pro 12.9"       | 1366 px      | 600 px                   |
+| iPad Pro 11" / Air   | 1194 px      | 597 px                   |
+| iPad Mini (8.3")     | 1133 px      | 566 px                   |
+| Surface Pro 9        | 1440 px      | 600 px                   |
+| MacBook Air 13"      | 1280 px      | 600 px                   |
+| Std. 24" Monitor     | 1920 px      | 600 px                   |
+
+### How to calculate PPI manually (recommended)
+
+1. Measure the real physical length of the stimulus line on the screen with a ruler (cm).
+2. Use the formula:
+
+`PPI = (LineLengthPx × 2.54) / MeasuredLengthCm`
+
+Example:
+- `LineLengthPx = 600`
+- `MeasuredLengthCm = 11.5`
+
+`PPI = (600 × 2.54) / 11.5 = 132.5`
+
+Enter this PPI value into the calibration field.
 
 ---
 
@@ -215,8 +148,9 @@ Computed using the **active calibrated PPI**:
 ## 🖼️ Understanding the Pattern Export (PNG)
 
 The **Download Pattern** button creates a high-resolution audit image showing every trial.
+
 - **Black Line**: The stimulus line.
-- **Red Dot**: The **true midpoint** (`drawMidX`).
+- **Red Dot**: The true midpoint (`drawMidX`).
 - **Blue Vertical Tick**: The participant's mark.
 - **Text Label**: `±pct (cm)` based on calibrated PPI.
 
@@ -227,27 +161,25 @@ Placement logic:
 
 ## 🧪 How to Use
 
-1. **Setup**: Enter trials (e.g., 10, 20).
-2. **Calibration**: Check PPI if physical units (cm) are needed.
-3. **Task**: Patient draws a short vertical lick at the center.
-4. **Drawing Feedback**:
-   - **Blue**: Valid stroke length.
-   - **Red**: Too long (> 200px) — discarded when released.
-5. **Controls**:
-   - **Reset**: Restart current test.
-   - **Finish**: End early and view results.
-6. **Export**: Enter Participant Info to unlock CSV and Pattern PNG downloads.
+- **Setup**: Enter trials (e.g., 10, 20).
+- **Calibration**: Check PPI if physical units (cm) are needed.
+- **Task**: Patient draws a short vertical tick at the center.
+- **Drawing Feedback**:
+  - **Blue**: Valid stroke length.
+  - **Red**: Too long (> 200px) — discarded when released.
+- **Controls**:
+  - **Reset**: Restart current test.
+  - **Finish**: End early and view results.
+- **Export**: Enter Participant Info to unlock CSV and Pattern PNG downloads.
 
 ---
 
 ## ⚠ Ethical & Research Notice
 
-- **Clinical Disclaimer**: This tool **does not replace** standardized diagnostic instruments.
+- **Clinical Disclaimer**: This tool does not replace standardized diagnostic instruments.
 - **Verification**: Researchers are encouraged to verify raw `px` data.
 - **Requirement**: Cite this project if used in academic publications.
 
 Contact: **sdswat93@gmail.com**
-
----
 
 **Project by:** *Zengin, M.*
