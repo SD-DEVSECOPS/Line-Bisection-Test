@@ -287,34 +287,23 @@
         <hr style="margin:18px 0; opacity:.3;">
 
         <div id="optionalSaveBox" style="text-align:left; margin-top:10px;">
-            <p style="margin:0 0 8px; font-weight:600;">
-                (Opsiyonel) Sonuçları anonim olarak kaydetmek için:
-            </p>
+            <p id="saveBoxTitle" style="margin:0 0 8px; font-weight:600;"></p>
 
-            <label style="display:block; font-size:13px; margin:10px 0 6px;">
-                Email (opsiyonel) — girmezsen kaydetmeyiz
-            </label>
+            <label id="emailLabel" style="display:block; font-size:13px; margin:10px 0 6px;"></label>
             <input type="email" id="email" placeholder="Email (opsiyonel)">
 
-            <label style="display:block; font-size:13px; margin:12px 0 6px;">
-                Daha önce inme (stroke) geçirdiniz mi? (opsiyonel)
-            </label>
+            <label id="strokeLabel" style="display:block; font-size:13px; margin:12px 0 6px;"></label>
 
             <div style="display:flex; gap:14px; align-items:center; font-size:14px; margin-bottom:10px;">
                 <label style="display:flex; gap:6px; align-items:center;">
-                    <input type="radio" name="stroke" value="1"> Evet
+                    <input type="radio" name="stroke" value="1"> <span id="strokeYesLabel"></span>
                 </label>
                 <label style="display:flex; gap:6px; align-items:center;">
-                    <input type="radio" name="stroke" value="0"> Hayır
-                </label>
-                <label style="display:flex; gap:6px; align-items:center; opacity:.7;">
-                    <input type="radio" name="stroke" value="" checked> Belirtmek istemiyorum
+                    <input type="radio" name="stroke" value="0"> <span id="strokeNoLabel"></span>
                 </label>
             </div>
 
-            <button id="submitResults" style="background:#198754; margin-top:6px;">
-                Sonuçları Kaydet
-            </button>
+            <button id="submitResults" style="background:#198754; margin-top:6px;"></button>
 
             <div id="saveStatus" style="margin-top:10px; font-size:13px;"></div>
         </div>
@@ -360,12 +349,20 @@
                     hint: "Adjust PPI if the physical measurement (cm) on screen is incorrect.",
                     defaults: { desktop: "Desktop / Standard", ipad12: "iPad Pro 12.9\"", ipad11: "iPad Pro 11\" / Air", mini: "iPad Mini", generic: "Generic/Unknown" }
                 },
+                saveBox: {
+                    title: "(Optional) Save anonymized results:",
+                    emailLabel: "Email (optional) — if empty, nothing is saved",
+                    strokeLabel: "Have you had a prior stroke? (optional)",
+                    strokeYes: "Yes", strokeNo: "No",
+                    saveBtn: "Save Results"
+                },
                 alerts: {
                     fillAll: "Please fill all fields.",
                     validNumLines: "Please enter a valid number of lines (1-100).",
                     noDrawings: "No drawings yet. Please bisect at least one line.",
                     noData: "No data recorded for this session.",
-                    strokeTooLong: "Stroke too long! Please draw a shorter mark."
+                    strokeTooLong: "Stroke too long! Please draw a shorter mark.",
+                    strokeRequired: "Please select stroke status before saving."
                 },
                 confirms: {
                     reset: "Restart current test? Current progress will be lost.",
@@ -412,12 +409,20 @@
                     hint: "Ekrandaki cm ölçümü hatalıysa PPI değerini güncelleyin.",
                     defaults: { desktop: "Masaüstü / Standart", ipad12: "iPad Pro 12.9\"", ipad11: "iPad Pro 11\" / Air", mini: "iPad Mini", generic: "Bilinmeyen" }
                 },
+                saveBox: {
+                    title: "(Opsiyonel) Sonuçları anonim olarak kaydetmek için:",
+                    emailLabel: "Email (opsiyonel) — girmezsen kaydetmeyiz",
+                    strokeLabel: "Daha önce inme (stroke) geçirdiniz mi? (opsiyonel)",
+                    strokeYes: "Evet", strokeNo: "Hayır",
+                    saveBtn: "Sonuçları Kaydet"
+                },
                 alerts: {
                     fillAll: "Lütfen tüm alanları doldurun.",
                     validNumLines: "Lütfen geçerli bir çizgi sayısı girin (1-100).",
                     noDrawings: "Henüz çizim yapılmadı. Lütfen en az bir çizgiyi bölün.",
                     noData: "Henüz veri kaydedilmedi.",
-                    strokeTooLong: "Çizgi çok uzun! Lütfen daha kısa bir işaretleme yapın."
+                    strokeTooLong: "Çizgi çok uzun! Lütfen daha kısa bir işaretleme yapın.",
+                    strokeRequired: "Kaydetmeden önce inme durumunu seçmelisiniz."
                 },
                 confirms: {
                     reset: "Mevcut testi yeniden başlatmak istediğinize emin misiniz? İlerleme silinecektir.",
@@ -435,7 +440,7 @@
                 btnReset: "Neustarten",
                 btnFinish: "Beenden",
                 btnMain: "Hauptmenü",
-                placeholders: { numLines: "Anzahl der Linien", name: "Name", surname: "Nachname", age: "Alter" },
+                placeholders: { numLines: "Anzahl der Linien", name: "Name", surname: "Nachname", age: "Age" },
                 csvHeaders: [
                     "--- TEILNEHMERINFORMATIONEN ---",
                     "Vorname", "Nachname", "Alter",
@@ -464,12 +469,20 @@
                     hint: "Passen Sie den PPI an, wenn die cm-Messung auf dem Bildschirm falsch ist.",
                     defaults: { desktop: "Desktop / Standard", ipad12: "iPad Pro 12.9\"", ipad11: "iPad Pro 11\" / Air", mini: "iPad Mini", generic: "Unbekannt" }
                 },
+                saveBox: {
+                    title: "(Optional) Ergebnisse anonym speichern:",
+                    emailLabel: "Email (optional) — falls leer, wird nichts gespeichert",
+                    strokeLabel: "Hatten Sie bereits einen Schlaganfall? (optional)",
+                    strokeYes: "Ja", strokeNo: "Nein",
+                    saveBtn: "Ergebnisse Speichern"
+                },
                 alerts: {
                     fillAll: "Bitte füllen Sie alle Felder aus.",
                     validNumLines: "Bitte geben Sie eine gültige Anzahl an Linien ein (1-100).",
                     noDrawings: "Noch keine Zeichnungen. Bitte halbieren Sie mindestens eine Linie.",
                     noData: "Keine Daten für diese Sitzung aufgezeichnet.",
-                    strokeTooLong: "Linie zu lang! Bitte zeichnen Sie eine kürzere Markierung."
+                    strokeTooLong: "Linie zu lang! Bitte zeichnen Sie eine kürzere Markierung.",
+                    strokeRequired: "Bitte wählen Sie den Schlaganfall-Status vor dem Speichern."
                 },
                 confirms: {
                     reset: "Aktuellen Test neustarten? Der Fortschritt geht verloren.",
@@ -506,6 +519,14 @@
             document.getElementById("name").placeholder = t.placeholders.name;
             document.getElementById("surname").placeholder = t.placeholders.surname;
             document.getElementById("age").placeholder = t.placeholders.age;
+
+            // Optional Save Box Localization
+            document.getElementById("saveBoxTitle").textContent = t.saveBox.title;
+            document.getElementById("emailLabel").textContent = t.saveBox.emailLabel;
+            document.getElementById("strokeLabel").textContent = t.saveBox.strokeLabel;
+            document.getElementById("strokeYesLabel").textContent = t.saveBox.strokeYes;
+            document.getElementById("strokeNoLabel").textContent = t.saveBox.strokeNo;
+            document.getElementById("submitResults").textContent = t.saveBox.saveBtn;
 
             // Update Calibration UI
             document.getElementById("calibTitle").textContent = t.calibration.title;
@@ -546,11 +567,15 @@
             const isApple = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent) && 'ontouchend' in document;
             const names = translations[LANG].calibration.defaults;
 
-            // Common iOS Devices Logical PPI mapping
+            // Common iOS Devices Logical PPI mapping (Safer Detection)
             if (isApple) {
-                if (maxS === 1366 && minS === 1024) return { name: names.ipad12, ppi: 123.7 };
-                if (maxS === 1194 || maxS === 1180 || maxS === 1112) return { name: names.ipad11, ppi: 122.5 };
-                if (maxS === 1133 || maxS === 1024) return { name: names.mini, ppi: 163 }; // Mini 6 is 1133
+                // iPad Pro 12.9" - Logik: 1024x1366
+                if (maxS === 1366 && minS === 1024) return { name: names.ipad12, ppi: 132.5 };
+                // iPad Pro 11" / Air - Logik: [1194, 1180, 1112]
+                if ([1194, 1180, 1112].includes(maxS)) return { name: names.ipad11, ppi: 132.0 };
+                // iPad Mini 6 - Logik: 744x1133
+                if (maxS === 1133 && minS === 744) return { name: names.mini, ppi: 163.0 };
+
                 return { name: "Apple Generic", ppi: 121 };
             }
             if (!('ontouchend' in document)) return { name: names.desktop, ppi: 96 };
@@ -718,13 +743,16 @@
             const errorCm = error * (2.54 / currentPPI);
             const errorInch = error / currentPPI;
 
+            const ppiUsed = currentPPI;
             lineHistory.push({
                 index: drawCount + 1,
                 startX, startY, lineLength, trueMidpointX,
                 markX: I.x, markY: I.y,
                 errorPct: clamped,
                 errorPx: error,
-                errorCm, errorInch
+                ppiUsed,
+                errorCm: error * (2.54 / ppiUsed),
+                errorInch: error / ppiUsed
             });
 
             const errorsDiv = document.getElementById("errors");
@@ -926,7 +954,7 @@
                 exCtx.fillStyle = "#333";
                 exCtx.font = "bold 11px monospace";
                 const sign = h.errorPct > 0 ? "+" : "";
-                const pxToCm = 2.54 / currentPPI;
+                const pxToCm = 2.54 / (h.ppiUsed || currentPPI);
                 exCtx.fillText(`${sign}${h.errorPct.toFixed(2)}% (${Math.abs(h.errorPx * pxToCm).toFixed(2)}cm)`, drawStartX + h.lineLength + 15, y + 4);
             });
 
@@ -966,9 +994,13 @@
                 return;
             }
 
-            // 3) stroke (seçilmediyse 0)
+            // 3) stroke (mandatory for save)
             const strokeVal = document.querySelector('input[name="stroke"]:checked')?.value;
-            const stroke = (strokeVal === "1") ? 1 : 0;
+            if (!strokeVal) {
+                alert(translations[LANG].alerts.strokeRequired);
+                return;
+            }
+            const stroke = parseInt(strokeVal);
 
             // 4) sonuç var mı?
             if (!lineHistory.length || !errors.length || !stats || !Number.isFinite(stats.signedAverage)) {
@@ -1046,6 +1078,14 @@
             }
         });
 
+        function lockScreen() {
+            document.body.style.overflow = 'hidden';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        function unlockScreen() {
+            document.body.style.overflow = '';
+        }
+
         document.getElementById("startTest").addEventListener("click", () => {
             const n = parseInt(document.getElementById("numLines").value);
             if (!n || n <= 0 || n > 100) { alert(translations[LANG].alerts.validNumLines); return; }
@@ -1064,6 +1104,7 @@
             document.getElementById("finalStats").style.display = "none";
             document.getElementById("userForm").style.display = "none";
 
+            lockScreen();
             resizeCanvas();
         });
 
@@ -1091,7 +1132,7 @@
             calculateStats();
             document.getElementById("userForm").style.display = "block";
             document.getElementById("finalStats").style.display = "block";
-            document.getElementById("title").style.display = "block";
+            unlockScreen();
         });
 
         document.getElementById("btnMain").addEventListener("click", () => {
@@ -1111,6 +1152,7 @@
             document.getElementById("errors").style.display = "none";
             document.getElementById("finalStats").style.display = "none";
             document.getElementById("userForm").style.display = "none";
+            unlockScreen();
         });
     </script>
 </body>
