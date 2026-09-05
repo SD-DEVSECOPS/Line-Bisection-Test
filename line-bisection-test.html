@@ -960,10 +960,57 @@
             });
 
             const uniqueCode = Math.floor(Math.random() * 1e8).toString().padStart(8, '0');
+            const fileName = `Pattern_${uniqueCode}_${safeFilePart(name)}_${safeFilePart(surname)}_${age}.png`;
+            const pngDataUrl = exportCanvas.toDataURL("image/png");
 
+            // iPad/iPhone Safari fix only.
+            // Other devices keep the original download behavior unchanged.
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+            if (isIOS) {
+                try {
+                    // Convert the already-created PNG data URL to a real File synchronously
+                    // so Safari can hand it to the native share/save sheet.
+                    const parts = pngDataUrl.split(",");
+                    const mime = parts[0].match(/:(.*?);/)[1];
+                    const binary = atob(parts[1]);
+                    const bytes = new Uint8Array(binary.length);
+
+                    for (let i = 0; i < binary.length; i++) {
+                        bytes[i] = binary.charCodeAt(i);
+                    }
+
+                    const file = new File([bytes], fileName, { type: mime });
+
+                    if (navigator.share &&
+                        (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+                        navigator.share({
+                            files: [file],
+                            title: fileName
+                        }).catch(() => {});
+                        return;
+                    }
+
+                    // Fallback for older iOS/iPadOS versions.
+                    const blobUrl = URL.createObjectURL(file);
+                    const iosLink = document.createElement("a");
+                    iosLink.download = fileName;
+                    iosLink.href = blobUrl;
+                    document.body.appendChild(iosLink);
+                    iosLink.click();
+                    document.body.removeChild(iosLink);
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+                    return;
+                } catch (e) {
+                    // If the iOS-specific path fails, fall through to the original behavior.
+                }
+            }
+
+            // Original behavior for all non-iOS devices.
             const link = document.createElement("a");
-            link.download = `Pattern_${uniqueCode}_${safeFilePart(name)}_${safeFilePart(surname)}_${age}.png`;
-            link.href = exportCanvas.toDataURL("image/png");
+            link.download = fileName;
+            link.href = pngDataUrl;
             link.click();
         });
 
@@ -1159,6 +1206,3 @@
 </body>
 
 </html>
-
-
-
